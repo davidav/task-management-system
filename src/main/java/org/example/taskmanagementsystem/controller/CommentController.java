@@ -2,6 +2,7 @@ package org.example.taskmanagementsystem.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.taskmanagementsystem.dto.Result;
 import org.example.taskmanagementsystem.dto.comment.CommentRs;
 import org.example.taskmanagementsystem.dto.comment.UpsertCommentRq;
 import org.example.taskmanagementsystem.service.CommentService;
@@ -15,17 +16,17 @@ public class CommentController {
     private final CommentService commentService;
 
     @GetMapping("/{id}")
-    public CommentRs findById(@PathVariable Long id) {
+    public Result findById(@PathVariable Long id) {
         return commentService.findByIdRs(id);
     }
 
     @PostMapping
-    public CommentRs create(@RequestBody @Valid UpsertCommentRq rq) {
+    public Result create(@RequestBody @Valid UpsertCommentRq rq) {
         return commentService.create(rq);
     }
 
     @PutMapping("/{id}")
-    public CommentRs update(@PathVariable Long id, @RequestBody @Valid UpsertCommentRq rq) {
+    public Result update(@PathVariable Long id, @RequestBody @Valid UpsertCommentRq rq) {
         return commentService.update(id, rq);
     }
 
