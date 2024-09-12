@@ -33,6 +33,18 @@ public class Comment implements Serializable {
     @JoinColumn(name = "task_id")
     @ToString.Exclude
     private Task task;
+
+    public Long getAuthorId() {
+        return author != null
+                ? author.getId()
+                : null;
+    }
+
+    public Long getTaskId() {
+        return task != null
+                ? task.getId()
+                : null;
+    }
 }
 
 

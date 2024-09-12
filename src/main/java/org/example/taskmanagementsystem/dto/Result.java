@@ -13,9 +13,21 @@ import lombok.*;
 
 @Setter
 @Getter
-@AllArgsConstructor
-@NoArgsConstructor
 public class Result {
+
+
+    public Result(boolean flag, Integer code, String message) {
+        this.flag = flag;
+        this.code = code;
+        this.message = message;
+    }
+
+    public Result(boolean flag, Integer code, String message, Object data) {
+        this.flag = flag;
+        this.code = code;
+        this.message = message;
+        this.data = data;
+    }
 
     private boolean flag;
 
@@ -24,5 +36,6 @@ public class Result {
     private String message;
 
     private Object data;
+
 
 }

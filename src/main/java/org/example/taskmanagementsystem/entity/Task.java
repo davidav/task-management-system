@@ -23,7 +23,6 @@ public class Task implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String title;
     private String description;
 
@@ -55,10 +54,24 @@ public class Task implements Serializable {
     private List<Comment> comments = new ArrayList<>();
 
     public void addComment(Comment comment) {
-        if (comments == null){
+        if (comments == null) {
             comments = new ArrayList<>();
         }
+        comment.setTask(this);
         comments.add(comment);
     }
 
+
+    public Long getAssigneeId() {
+        return assignee != null
+                ? assignee.getId()
+                : null;
+    }
+
+    public Long getAuthorId() {
+        return author != null
+                ? author.getId()
+                : null;
+
+    }
 }

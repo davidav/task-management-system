@@ -1,21 +1,29 @@
 package org.example.taskmanagementsystem.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityNotFoundException;
+import org.example.taskmanagementsystem.dto.StatusCode;
+import org.example.taskmanagementsystem.dto.comment.CommentRq;
+import org.example.taskmanagementsystem.dto.comment.CommentRqToCommentConverter;
 import org.example.taskmanagementsystem.entity.Comment;
 import org.example.taskmanagementsystem.service.CommentService;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.Instant;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 
 @SpringBootTest
@@ -25,19 +33,22 @@ class CommentControllerTest {
     @Autowired
     MockMvc mockMvc;
 
+    @Autowired
+    ObjectMapper objectMapper;
+
+    @MockBean
+    CommentRqToCommentConverter commentRqToCommentConverter;
+
     @MockBean
     CommentService commentService;
-
-    @InjectMocks
-    CommentController commentController;
 
     List<Comment> comments;
 
     @BeforeEach
     void setUp() {
-        Comment c1 = Comment.builder().comment("Comment1").build();
-        Comment c2 = Comment.builder().comment("Comment2").build();
-        Comment c3 = Comment.builder().comment("Comment3").build();
+        Comment c1 = Comment.builder().id(1L).comment("Comment1").build();
+        Comment c2 = Comment.builder().id(2L).comment("Comment2").build();
+        Comment c3 = Comment.builder().id(3L).comment("Comment3").build();
         comments = List.of(c1, c2, c3);
     }
 
@@ -46,26 +57,95 @@ class CommentControllerTest {
     }
 
     @Test
-    void testFindByIdSuccess() {
+    void testFindByIdSuccess() throws Exception {
 
         given(commentService.findById(1L)).willReturn(comments.get(0));
 
-        commentController.findById(1L);
-
-
-
-
+        this.mockMvc.perform(get("/api/v1/comment/1").accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Find one success"))
+                .andExpect(jsonPath("$.data.comment").value("Comment1"));
     }
 
     @Test
-    void create() {
+    void testFindByIdNotFind() throws Exception {
+
+        given(commentService.findById(1L)).willThrow(new EntityNotFoundException("Comment with id 1 not found"));
+
+        this.mockMvc.perform(get("/api/v1/comment/1").accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(StatusCode.NOT_FOUND))
+                .andExpect(jsonPath("$.message").value("Comment with id 1 not found"))
+                .andExpect(jsonPath("$.data").doesNotExist());
     }
 
     @Test
-    void update() {
+    void testFindAllSuccess() throws Exception {
+
+        given(commentService.findAll()).willReturn(comments);
+
+        mockMvc.perform(get("/api/v1/comment").accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Find all success"))
+                .andExpect(jsonPath("$.data[0].comment").value("Comment1"))
+                .andExpect(jsonPath("$.data[1].comment").value("Comment2"))
+                .andExpect(jsonPath("$.data[2].comment").value("Comment3"))
+                .andExpect(jsonPath("$.data", Matchers.hasSize(comments.size())));
     }
 
     @Test
-    void deleteById() {
+    void testCreateCommentSuccess() throws Exception {
+
+        CommentRq rq = new CommentRq("Comment1", 1L, 1L);
+        given(commentRqToCommentConverter.convert(rq)).willReturn(comments.get(0));
+        given(commentService.create(comments.get(0))).willReturn(comments.get(0));
+
+        this.mockMvc.perform(post("/api/v1/comment")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(rq))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Create success"))
+                .andExpect(jsonPath("$.data.comment").value("Comment1"));
+    }
+
+    @Test
+    void testUpdateCommentSuccess() throws Exception {
+
+        Instant createAt = Instant.now();
+        Comment updatedComment = Comment.builder()
+                .id(1L)
+                .comment("CommentUp")
+                .author(null)
+                .task(null)
+                .createAt(createAt)
+                .build() ;
+        CommentRq rq = new CommentRq("CommentUp", 1L, 1L);
+        given(commentRqToCommentConverter.convert(rq)).willReturn(updatedComment);
+        given(commentService.update(1L, updatedComment)).willReturn(updatedComment);
+
+        this.mockMvc.perform(put("/api/v1/comment/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(rq))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Update success"))
+                .andExpect(jsonPath("$.data.comment").value("CommentUp"));
+    }
+
+    @Test
+    void testDeleteByIdSuccess() throws Exception {
+
+        this.mockMvc.perform(delete("/api/v1/comment/1")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Delete success"))
+                .andExpect(jsonPath("$.data").doesNotExist());
+
     }
 }

@@ -1,4 +1,11 @@
 package org.example.taskmanagementsystem.dto.comment;
 
-public class CommentRs {
+
+import java.time.Instant;
+
+public record CommentRs(Long id,
+                        String comment,
+                        Long authorId,
+                        Long taskId,
+                        Instant createAt) {
 }
