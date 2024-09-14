@@ -26,9 +26,9 @@ public class CommentController {
 
     @GetMapping("/{id}")
     public Result findById(@PathVariable Long id) {
-        CommentRs commentRs = commentToCommentRsConverter.convert(commentService.findById(id));
 
-        return new Result(true, StatusCode.SUCCESS, "Find one success", commentRs);
+        return new Result(true, StatusCode.SUCCESS, "Find one success",
+                commentToCommentRsConverter.convert(commentService.findById(id)));
 
     }
 

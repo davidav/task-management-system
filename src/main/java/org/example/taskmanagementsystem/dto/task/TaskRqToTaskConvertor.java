@@ -9,6 +9,13 @@ public class TaskRqToTaskConvertor implements Converter<TaskRq, Task> {
 
     @Override
     public Task convert(TaskRq source) {
-        return null;
+        return Task.builder()
+                .title(source.title())
+                .description(source.description())
+                .status(source.status())
+                .priority(source.priority())
+                .author(null)  //TODO (userService.findById(source.authorId()))
+                .assignee(null) //TODO (userService.findById(source.assigneeId()))
+                .build();
     }
 }

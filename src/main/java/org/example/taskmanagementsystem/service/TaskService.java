@@ -21,4 +21,8 @@ private final TaskRepository taskRepository;
                 MessageFormatter.format("Task with id {} not found", id).getMessage()));
 
     }
+
+    public Task create(Task task) {
+        return taskRepository.save(task);
+    }
 }
