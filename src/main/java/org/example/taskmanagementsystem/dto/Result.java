@@ -2,13 +2,16 @@ package org.example.taskmanagementsystem.dto;
 
 import lombok.*;
 
+import java.time.Instant;
+
 /**
  * This class defines the schema of the response. It is used to encapsulate data prepared by
  * the server side, this object will be serialized to JSON before sent back to the client end.
- *     private boolean flag; // Two values: true means success, false means not success
- *     private Integer code; // Status code. e.g., 200
- *     private String message; // Response message
- *     private Object data; // The response payload
+ *     Instant timestamp
+ *     boolean flag - Two values: true means success, false means not success
+ *     Integer code - Status code. e.g., 200
+ *     String message - Response message
+ *     Object data - The response payload
  */
 
 @Setter
@@ -28,6 +31,8 @@ public class Result {
         this.message = message;
         this.data = data;
     }
+
+    private Instant timestamp = Instant.now();
 
     private boolean flag;
 

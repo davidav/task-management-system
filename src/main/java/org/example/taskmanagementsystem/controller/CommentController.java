@@ -13,7 +13,6 @@ import org.example.taskmanagementsystem.service.CommentService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -37,7 +36,7 @@ public class CommentController {
         List<Comment> comments = commentService.findAll();
         List<CommentRs> commentRs = comments.stream()
                 .map(commentToCommentRsConverter::convert)
-                .collect(Collectors.toList());
+                .toList();
 
         return new Result(true, StatusCode.SUCCESS, "Find all success", commentRs);
     }
