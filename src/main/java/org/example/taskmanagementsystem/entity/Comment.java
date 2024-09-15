@@ -26,13 +26,13 @@ public class Comment implements Serializable {
     @ToString.Exclude
     private User author;
 
-    @CreationTimestamp
-    private Instant createAt;
-
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "task_id")
     @ToString.Exclude
     private Task task;
+
+    @CreationTimestamp
+    private Instant createAt;
 
     public Long getAuthorId() {
         return author != null

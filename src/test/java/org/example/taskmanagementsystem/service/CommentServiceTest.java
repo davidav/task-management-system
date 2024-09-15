@@ -60,8 +60,8 @@ class CommentServiceTest {
                 .comment("Test comment")
                 .author(user)
                 .createAt(createAt)
-                .task(task)
                 .build();
+        task.addComment(comment);
     }
 
     @AfterEach
@@ -84,13 +84,11 @@ class CommentServiceTest {
     }
 
     @Test
-    void testFindByIdNotFound(){
+    void testFindByIdNotFailure(){
 
         given(commentRepository.findById(Mockito.any(Long.class))).willReturn(Optional.empty());
 
-        Throwable thrown = catchThrowable(() -> {
-            commentService.findById(1L);
-        });
+        Throwable thrown = catchThrowable(() -> commentService.findById(1L));
 
         assertThat(thrown).isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("Comment with id 1 not found");
@@ -149,7 +147,7 @@ class CommentServiceTest {
     }
 
     @Test
-    void deleteById() {
+    void deleteByIdSuccess() {
 
         commentService.deleteById(1L);
 
