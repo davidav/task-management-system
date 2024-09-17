@@ -33,4 +33,6 @@ public class ExceptionHandlerAdvice {
 
 
 //    DataIntegrityViolationException
+//    ConstraintDefinitionException
+//    IllegalArgumentException
 }

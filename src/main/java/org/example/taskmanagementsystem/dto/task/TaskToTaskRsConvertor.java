@@ -7,6 +7,7 @@ import org.example.taskmanagementsystem.dto.comment.CommentToCommentRsConverter;
 import org.example.taskmanagementsystem.entity.Comment;
 import org.example.taskmanagementsystem.entity.Task;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +22,7 @@ public class TaskToTaskRsConvertor implements Converter<Task, TaskRs> {
     private final CommentToCommentRsConverter commentToCommentRsConverter;
 
     @Override
-    public TaskRs convert(Task source) {
+    public TaskRs convert(@NotNull Task source) {
         return new TaskRs(
                 source.getId(),
                 source.getTitle(),
