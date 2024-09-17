@@ -4,10 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import org.example.taskmanagementsystem.dto.StatusCode;
 import org.example.taskmanagementsystem.dto.comment.CommentRs;
-import org.example.taskmanagementsystem.dto.task.TaskRq;
-import org.example.taskmanagementsystem.dto.task.TaskRqToTaskConvertor;
-import org.example.taskmanagementsystem.dto.task.TaskRs;
-import org.example.taskmanagementsystem.dto.task.TaskToTaskRsConvertor;
+import org.example.taskmanagementsystem.dto.task.*;
 import org.example.taskmanagementsystem.entity.*;
 import org.example.taskmanagementsystem.service.TaskService;
 import org.hamcrest.Matchers;
@@ -106,8 +103,8 @@ class TaskControllerTest {
     @Test
     void testFindByIdTaskWithCommentsSuccess() throws Exception {
 
-        CommentRs commentRs1 = new CommentRs(1L, "Comment1", 1L,1L, createAt);
-        CommentRs commentRs2 = new CommentRs(2L, "Comment2", 2L,1L, createAt);
+        CommentRs commentRs1 = new CommentRs(1L, "Comment1", 1L, 1L, createAt);
+        CommentRs commentRs2 = new CommentRs(2L, "Comment2", 2L, 1L, createAt);
         TaskRs taskRs = new TaskRs(1L, "Task1", "description task1", Status.WAITING, Priority.LOW,
                 1L, 1L, Instant.now(), List.of(commentRs1, commentRs2));
 
@@ -138,8 +135,8 @@ class TaskControllerTest {
     @Test
     void testFindAllSuccess() throws Exception {
 
-        CommentRs commentRs1 = new CommentRs(1L, "Comment1", 1L,1L, createAt);
-        CommentRs commentRs2 = new CommentRs(2L, "Comment2", 2L,1L, createAt);
+        CommentRs commentRs1 = new CommentRs(1L, "Comment1", 1L, 1L, createAt);
+        CommentRs commentRs2 = new CommentRs(2L, "Comment2", 2L, 1L, createAt);
         TaskRs taskRs = new TaskRs(1L, "Task1", "description task1", Status.WAITING, Priority.LOW,
                 1L, 1L, Instant.now(), List.of(commentRs1, commentRs2));
         given(taskToTaskRsConvertor.convert(any(Task.class))).willReturn(taskRs);
@@ -176,7 +173,7 @@ class TaskControllerTest {
     }
 
     @Test
-    void testUpdateCommentSuccess() throws Exception {
+    void testUpdateTaskSuccess() throws Exception {
         TaskRq rq = new TaskRq("TaskUP", "Update Task", Status.WAITING, Priority.LOW, 1L, 1L);
         Task task = Task.builder()
                 .id(1L)
@@ -192,7 +189,7 @@ class TaskControllerTest {
         TaskRs taskRs = new TaskRs(1L, "TaskUP", "Update Task", Status.WAITING, Priority.LOW,
                 1L, 1L, createAt, List.of());
         given(taskRqToTaskConvertor.convert(rq)).willReturn(task);
-        given(taskService.update(anyLong(),any(Task.class))).willReturn(task);
+        given(taskService.update(anyLong(), any(Task.class))).willReturn(task);
         given(taskToTaskRsConvertor.convert(any(Task.class))).willReturn(taskRs);
 
         this.mockMvc.perform(put("/api/v1/task/1")
@@ -215,9 +212,52 @@ class TaskControllerTest {
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
                 .andExpect(jsonPath("$.message").value("Delete success"))
                 .andExpect(jsonPath("$.data").doesNotExist());
-
     }
 
+    @Test
+    void testFilterTasksByAuthorSuccess() throws Exception {
+        CommentRs commentRs1 = new CommentRs(1L, "Comment1", 1L, 1L, createAt);
+        CommentRs commentRs2 = new CommentRs(2L, "Comment2", 2L, 1L, createAt);
+        TaskRs taskRs = new TaskRs(1L, "Task1", "description task1", Status.WAITING, Priority.LOW,
+                1L, 1L, Instant.now(), List.of(commentRs1, commentRs2));
+        TaskFilter filter = new TaskFilter(10,0,1L, null);
+
+        given(taskService.filterBy(filter)).willReturn(tasks);
+        given(taskToTaskRsConvertor.convert(any(Task.class))).willReturn(taskRs);
+
+        this.mockMvc.perform(get("/api/v1/task/filter?pageNumber=0&pageSize=10&authorId=1")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Filtered tasks"))
+                .andExpect(jsonPath("$.data").exists())
+                .andExpect(jsonPath("$.data[0].title").value("Task1"))
+                .andExpect(jsonPath("$.data[0].commentsRs[0].comment").value("Comment1"))
+                .andExpect(jsonPath("$.data[0].commentsRs[1].comment").value("Comment2"))
+                .andExpect(jsonPath("$.data", Matchers.hasSize(2)));
+    }
+
+    @Test
+    void testFilterTasksByAssigneeSuccess() throws Exception {
+
+        CommentRs commentRs1 = new CommentRs(1L, "Comment1", 1L, 2L, createAt);
+        TaskRs taskRs = new TaskRs(2L, "Task2", "description task2", Status.WAITING, Priority.LOW,
+                1L, 2L, Instant.now(), List.of(commentRs1));
+        TaskFilter filter = new TaskFilter(10,0,null, 2L);
+        given(taskService.filterBy(filter)).willReturn(tasks);
+        given(taskToTaskRsConvertor.convert(any(Task.class))).willReturn(taskRs);
+
+
+        this.mockMvc.perform(get("/api/v1/task/filter?pageNumber=0&pageSize=10&assigneeId=2")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Filtered tasks"))
+                .andExpect(jsonPath("$.data").exists())
+                .andExpect(jsonPath("$.data[0].title").value("Task2"))
+                .andExpect(jsonPath("$.data[0].commentsRs[0].comment").value("Comment1"))
+                .andExpect(jsonPath("$.data", Matchers.hasSize(2)));
+    }
 
 
 

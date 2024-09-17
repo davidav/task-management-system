@@ -1,11 +1,16 @@
 package org.example.taskmanagementsystem.dto.task;
 
+import lombok.RequiredArgsConstructor;
 import org.example.taskmanagementsystem.entity.Task;
+import org.example.taskmanagementsystem.service.UserService;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class TaskRqToTaskConvertor implements Converter<TaskRq, Task> {
+
+    private final UserService userService;
 
     @Override
     public Task convert(TaskRq source) {
@@ -14,8 +19,8 @@ public class TaskRqToTaskConvertor implements Converter<TaskRq, Task> {
                 .description(source.description())
                 .status(source.status())
                 .priority(source.priority())
-                .author(null)  //TODO (userService.findById(source.authorId()))
-                .assignee(null) //TODO (userService.findById(source.assigneeId()))
+                .author(userService.findById(source.authorId()))
+                .assignee(userService.findById(source.assigneeId()))
                 .build();
     }
 }

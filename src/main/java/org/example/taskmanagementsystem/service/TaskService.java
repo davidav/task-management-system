@@ -3,10 +3,14 @@ package org.example.taskmanagementsystem.service;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.example.taskmanagementsystem.dto.task.TaskFilter;
 import org.example.taskmanagementsystem.entity.Task;
 import org.example.taskmanagementsystem.repo.TaskRepository;
+import org.example.taskmanagementsystem.repo.TaskSpecification;
 import org.example.taskmanagementsystem.util.AppHelperUtils;
 import org.slf4j.helpers.MessageFormatter;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -48,4 +52,11 @@ private final TaskRepository taskRepository;
 
         taskRepository.deleteById(id);
     }
+
+    public List<Task> filterBy(TaskFilter filter) {
+        Specification<Task> spec = TaskSpecification.withFilter(filter);
+        PageRequest pageable = PageRequest.of(filter.getPageNumber(), filter.getPageSize());
+        return taskRepository.findAll(spec, pageable).getContent();
+    }
 }
+
