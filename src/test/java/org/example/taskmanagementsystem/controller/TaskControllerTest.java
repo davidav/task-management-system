@@ -173,6 +173,25 @@ class TaskControllerTest {
     }
 
     @Test
+    void testCreateTaskFail() throws Exception {
+        TaskRq rq = new TaskRq("", "", null, null, null, null);
+
+        this.mockMvc.perform(post("/api/v1/task")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(rq))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(StatusCode.INVALID_ARGUMENT))
+                .andExpect(jsonPath("$.message").value("Provided arguments are not valid"))
+                .andExpect(jsonPath("$.data").exists())
+                .andExpect(jsonPath("$.data.title").value("Title must be from 3 to 20"))
+                .andExpect(jsonPath("$.data.description").value("Description must be from 5 to 50"))
+                .andExpect(jsonPath("$.data.status").value("Status must not be null"))
+                .andExpect(jsonPath("$.data.priority").value("Priority must not be null"));
+    }
+
+    @Test
     void testUpdateTaskSuccess() throws Exception {
         TaskRq rq = new TaskRq("TaskUP", "Update Task", Status.WAITING, Priority.LOW, 1L, 1L);
         Task task = Task.builder()
@@ -258,7 +277,4 @@ class TaskControllerTest {
                 .andExpect(jsonPath("$.data[0].commentsRs[0].comment").value("Comment1"))
                 .andExpect(jsonPath("$.data", Matchers.hasSize(2)));
     }
-
-
-
 }

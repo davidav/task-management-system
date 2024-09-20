@@ -69,7 +69,7 @@ class CommentControllerTest {
     }
 
     @Test
-    void testFindByIdNotFind() throws Exception {
+    void testFindByIdFail() throws Exception {
 
         given(commentService.findById(1L)).willThrow(new EntityNotFoundException("Comment with id 1 not found"));
 
@@ -113,6 +113,24 @@ class CommentControllerTest {
     }
 
     @Test
+    void testCreateCommentFail() throws Exception {
+        CommentRq rq = new CommentRq("", null, null);
+
+        this.mockMvc.perform(post("/api/v1/comment")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(rq))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.timestamp").value(Matchers.any(String.class)))
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(StatusCode.INVALID_ARGUMENT))
+                .andExpect(jsonPath("$.message").value("Provided arguments are not valid"))
+                .andExpect(jsonPath("$.data").exists())
+                .andExpect(jsonPath("$.data.comment").value("Length must be from 3 to 30"))
+                .andExpect(jsonPath("$.data.authorId").value("author id required"))
+                .andExpect(jsonPath("$.data.taskId").value("task id required"));
+    }
+
+    @Test
     void testUpdateCommentSuccess() throws Exception {
 
         Instant createAt = Instant.now();
@@ -135,6 +153,21 @@ class CommentControllerTest {
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
                 .andExpect(jsonPath("$.message").value("Update success"))
                 .andExpect(jsonPath("$.data.comment").value("CommentUp"));
+    }
+
+    @Test
+    void testUpdateCommentFail() throws Exception {
+
+        CommentRq rq = new CommentRq("", null, null);
+
+        this.mockMvc.perform(put("/api/v1/comment/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(rq))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(StatusCode.INVALID_ARGUMENT))
+                .andExpect(jsonPath("$.message").value("Provided arguments are not valid"))
+                .andExpect(jsonPath("$.data").exists());
     }
 
     @Test

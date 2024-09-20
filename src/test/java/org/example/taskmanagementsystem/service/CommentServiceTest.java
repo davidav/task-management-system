@@ -28,13 +28,10 @@ class CommentServiceTest {
 
     @Mock
     CommentRepository commentRepository;
-
     @InjectMocks
     CommentService commentService;
 
     private Comment comment;
-
-
 
     @BeforeEach
     void setUp() {
@@ -128,11 +125,14 @@ class CommentServiceTest {
 
     }
 
+
+
+
     @Test
     void testUpdateCommentSuccess() {
 
-        given(commentRepository.save(comment)).willReturn(comment);
         given(commentRepository.findById(1L)).willReturn(Optional.of(comment));
+        given(commentRepository.save(comment)).willReturn(comment);
 
         Comment returnedComment = commentService.update(1L, comment);
 

@@ -154,6 +154,27 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.data.password").doesNotExist());
     }
 
+    @Test
+    void testCreateFail() throws Exception {
+
+        UserRq fakeRq = new UserRq("","admin","", null);
+
+        mockMvc.perform(
+                        post("/api/v1/user")
+                                .accept(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(fakeRq))
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(jsonPath("$.timestamp").value(any(String.class)))
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(StatusCode.INVALID_ARGUMENT))
+                .andExpect(jsonPath("$.message").value("Provided arguments are not valid"))
+                .andExpect(jsonPath("$.data").exists())
+                .andExpect(jsonPath("$.data.username").value("Username must be from 3 to 10 symbols"))
+                .andExpect(jsonPath("$.data.email").value("The email address must be in the format user@example.com"))
+                .andExpect(jsonPath("$.data.password").value("The password length must be from 4 no more than 255 characters."))
+                .andExpect(jsonPath("$.data.roles").value("RoleType must not be null"));
+    }
 
     @Test
     void testUpdateUserSuccess() throws Exception {
@@ -184,5 +205,4 @@ class UserControllerTest {
 
 
     }
-
 }
