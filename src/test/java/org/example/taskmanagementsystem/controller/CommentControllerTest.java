@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.Instant;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -65,6 +66,7 @@ class CommentControllerTest {
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
                 .andExpect(jsonPath("$.message").value("Find one success"))
+                .andExpect(jsonPath("$.data").exists())
                 .andExpect(jsonPath("$.data.comment").value("Comment1"));
     }
 
@@ -92,7 +94,7 @@ class CommentControllerTest {
                 .andExpect(jsonPath("$.data[0].comment").value("Comment1"))
                 .andExpect(jsonPath("$.data[1].comment").value("Comment2"))
                 .andExpect(jsonPath("$.data[2].comment").value("Comment3"))
-                .andExpect(jsonPath("$.data", Matchers.hasSize(comments.size())));
+                .andExpect(jsonPath("$.data", Matchers.hasSize(3)));
     }
 
     @Test
@@ -100,7 +102,7 @@ class CommentControllerTest {
 
         CommentRq rq = new CommentRq("Comment1", 1L, 1L);
         given(commentRqToCommentConverter.convert(rq)).willReturn(comments.get(0));
-        given(commentService.create(comments.get(0))).willReturn(comments.get(0));
+        given(commentService.create(any(Comment.class))).willReturn(comments.get(0));
 
         this.mockMvc.perform(post("/api/v1/comment")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -109,6 +111,7 @@ class CommentControllerTest {
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
                 .andExpect(jsonPath("$.message").value("Create success"))
+                .andExpect(jsonPath("$.data.comment").exists())
                 .andExpect(jsonPath("$.data.comment").value("Comment1"));
     }
 
@@ -167,7 +170,10 @@ class CommentControllerTest {
                 .andExpect(jsonPath("$.flag").value(false))
                 .andExpect(jsonPath("$.code").value(StatusCode.INVALID_ARGUMENT))
                 .andExpect(jsonPath("$.message").value("Provided arguments are not valid"))
-                .andExpect(jsonPath("$.data").exists());
+                .andExpect(jsonPath("$.data").exists())
+                .andExpect(jsonPath("$.data.comment").value("Length must be from 3 to 30"))
+                .andExpect(jsonPath("$.data.authorId").value("author id required"))
+                .andExpect(jsonPath("$.data.taskId").value("task id required"));
     }
 
     @Test
@@ -181,4 +187,5 @@ class CommentControllerTest {
                 .andExpect(jsonPath("$.data").doesNotExist());
 
     }
+
 }

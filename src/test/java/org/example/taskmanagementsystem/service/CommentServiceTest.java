@@ -1,7 +1,7 @@
 package org.example.taskmanagementsystem.service;
 
 import jakarta.persistence.EntityNotFoundException;
-import org.example.taskmanagementsystem.entity.*;
+import org.example.taskmanagementsystem.entity.Comment;
 import org.example.taskmanagementsystem.repo.CommentRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,10 +12,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -31,34 +29,10 @@ class CommentServiceTest {
     @InjectMocks
     CommentService commentService;
 
-    private Comment comment;
+    private final Comment comment = Comment.builder().id(1L).comment("Test comment").build();
 
     @BeforeEach
     void setUp() {
-        Instant createAt = Instant.now();
-        User user = User.builder()
-                .id(1L)
-                .username("user")
-                .email("user@mail.com")
-                .password("user")
-                .roles(Set.of(RoleType.ROLE_USER))
-                .build();
-        Task task = Task.builder()
-                .id(1L)
-                .title("Task1")
-                .description("Test task")
-                .status(Status.WAITING)
-                .priority(Priority.MEDIUM)
-                .author(user)
-                .assignee(user)
-                .build();
-        comment = Comment.builder()
-                .id(1L)
-                .comment("Test comment")
-                .author(user)
-                .createAt(createAt)
-                .build();
-        task.addComment(comment);
     }
 
     @AfterEach
@@ -72,16 +46,13 @@ class CommentServiceTest {
 
         Comment returnedComment = commentService.findById(1L);
 
-        assertThat(returnedComment.getId()).isEqualTo(comment.getId());
-        assertThat(returnedComment.getComment()).isEqualTo(comment.getComment());
-        assertThat(returnedComment.getAuthor()).isEqualTo(comment.getAuthor());
-        assertThat(returnedComment.getCreateAt()).isEqualTo(comment.getCreateAt());
-        assertThat(returnedComment.getTask()).isEqualTo(comment.getTask());
+        assertThat(returnedComment.getId()).isEqualTo(1L);
+        assertThat(returnedComment.getComment()).isEqualTo("Test comment");
         verify(commentRepository, times(1)).findById(1L);
     }
 
     @Test
-    void testFindByIdNotFailure(){
+    void testFindByIdFail() {
 
         given(commentRepository.findById(Mockito.any(Long.class))).willReturn(Optional.empty());
 
@@ -93,56 +64,46 @@ class CommentServiceTest {
     }
 
     @Test
-    void testFindAllSuccess(){
-        Comment c1 = Comment.builder().comment("Comment1").build();
-        Comment c2 = Comment.builder().comment("Comment2").build();
-        Comment c3 = Comment.builder().comment("Comment3").build();
-        List<Comment> comments = List.of(c1, c2, c3);
+    void testFindAllSuccess() {
+        Comment comment1 = Comment.builder().id(2L).comment("Comment1").build();
+        List<Comment> comments = List.of(comment, comment1);
         given(commentRepository.findAll()).willReturn(comments);
 
         List<Comment> returnedComments = commentService.findAll();
 
-        assertThat(returnedComments.get(0).getComment()).isEqualTo(comments.get(0).getComment());
-        assertThat(returnedComments.get(1).getComment()).isEqualTo(comments.get(1).getComment());
-        assertThat(returnedComments.get(2).getComment()).isEqualTo(comments.get(2).getComment());
+        assertThat(returnedComments.get(0).getId()).isEqualTo(1L);
+        assertThat(returnedComments.get(0).getComment()).isEqualTo("Test comment");
+        assertThat(returnedComments.get(1).getId()).isEqualTo(2L);
+        assertThat(returnedComments.get(1).getComment()).isEqualTo("Comment1");
         verify(commentRepository, times(1)).findAll();
 
     }
 
     @Test
-    void testCreateCommentSuccess() {
+    void testCreateSuccess() {
 
         given(commentRepository.save(comment)).willReturn(comment);
 
         Comment returnedComment = commentService.create(comment);
 
-        assertThat(returnedComment.getId()).isEqualTo(comment.getId());
-        assertThat(returnedComment.getComment()).isEqualTo(comment.getComment());
-        assertThat(returnedComment.getAuthor()).isEqualTo(comment.getAuthor());
-        assertThat(returnedComment.getCreateAt()).isEqualTo(comment.getCreateAt());
-        assertThat(returnedComment.getTask()).isEqualTo(comment.getTask());
+        assertThat(returnedComment.getId()).isEqualTo(1L);
+        assertThat(returnedComment.getComment()).isEqualTo("Test comment");
         verify(commentRepository, times(1)).save(comment);
 
     }
 
-
-
-
     @Test
-    void testUpdateCommentSuccess() {
+    void testUpdateSuccess() {
+        Comment update = Comment.builder().id(1L).comment("Update comment").build();
 
         given(commentRepository.findById(1L)).willReturn(Optional.of(comment));
-        given(commentRepository.save(comment)).willReturn(comment);
+        given(commentRepository.save(comment)).willReturn(update);
 
-        Comment returnedComment = commentService.update(1L, comment);
+        Comment returnedComment = commentService.update(1L, update);
 
-        assertThat(returnedComment.getId()).isEqualTo(comment.getId());
-        assertThat(returnedComment.getComment()).isEqualTo(comment.getComment());
-        assertThat(returnedComment.getAuthor()).isEqualTo(comment.getAuthor());
-        assertThat(returnedComment.getCreateAt()).isEqualTo(comment.getCreateAt());
-        assertThat(returnedComment.getTask()).isEqualTo(comment.getTask());
+        assertThat(returnedComment.getId()).isEqualTo(1L);
+        assertThat(returnedComment.getComment()).isEqualTo("Update comment");
         verify(commentRepository, times(1)).save(comment);
-
 
     }
 

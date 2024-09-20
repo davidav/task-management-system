@@ -1,6 +1,7 @@
 package org.example.taskmanagementsystem.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -19,6 +20,7 @@ public class Comment implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Size(min = 3, max = 30, message = "Length comment must be from {min} to {max}")
     private String comment;
 
     @ManyToOne(fetch = FetchType.EAGER)

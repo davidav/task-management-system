@@ -48,7 +48,7 @@ class TaskServiceTest {
         task = Task.builder()
                 .id(1L)
                 .title("Task")
-                .description("Test task")
+                .description("Description task")
                 .status(Status.WAITING)
                 .priority(Priority.MEDIUM)
                 .author(user)
@@ -79,16 +79,19 @@ class TaskServiceTest {
 
     @Test
     void findByIdTaskWithCommentSuccess() {
+
         given(taskRepository.findById(1L)).willReturn(Optional.of(task));
 
         Task returnedTask = taskService.findById(1L);
 
-        assertThat(returnedTask.getId()).isEqualTo(task.getId());
-        assertThat(returnedTask.getCreatedAt()).isEqualTo(task.getCreatedAt());
-        assertThat(returnedTask.getAuthor()).isEqualTo(task.getAuthor());
-        assertThat(returnedTask.getDescription()).isEqualTo(task.getDescription());
-        assertThat(returnedTask.getComments().get(0).getComment()).isEqualTo(task.getComments().get(0).getComment());
-        assertThat(returnedTask.getComments().get(1).getComment()).isEqualTo(task.getComments().get(1).getComment());
+        assertThat(returnedTask.getId()).isEqualTo(1L);
+        assertThat(returnedTask.getTitle()).isEqualTo("Task");
+        assertThat(returnedTask.getDescription()).isEqualTo("Description task");
+        assertThat(returnedTask.getAuthor().getId()).isEqualTo(1L);
+        assertThat(returnedTask.getAssignee().getId()).isEqualTo(1L);
+        assertThat(returnedTask.getComments().get(0).getComment()).isEqualTo("Test comment 1");
+        assertThat(returnedTask.getComments().get(1).getComment()).isEqualTo("Test comment 2");
+        assertThat(returnedTask.getCreatedAt()).isEqualTo(createAt);
         verify(taskRepository, times(1)).findById(1L);
     }
 
@@ -128,7 +131,7 @@ class TaskServiceTest {
 
         assertThat(returnedTask.getId()).isEqualTo(1L);
         assertThat(returnedTask.getTitle()).isEqualTo("Task");
-        assertThat(returnedTask.getDescription()).isEqualTo("Test task");
+        assertThat(returnedTask.getDescription()).isEqualTo("Description task");
         assertThat(returnedTask.getCreatedAt()).isEqualTo(createAt);
         verify(taskRepository, times(1)).save(task);
 
