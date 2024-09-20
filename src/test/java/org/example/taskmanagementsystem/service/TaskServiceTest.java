@@ -18,6 +18,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -78,7 +79,7 @@ class TaskServiceTest {
     }
 
     @Test
-    void findByIdTaskWithCommentSuccess() {
+    void findByIdSuccess() {
 
         given(taskRepository.findById(1L)).willReturn(Optional.of(task));
 
@@ -96,7 +97,7 @@ class TaskServiceTest {
     }
 
     @Test
-    void findByIdTaskWithCommentFailure() {
+    void findByIdFailure() {
         given(taskRepository.findById(1L)).willReturn(Optional.empty());
 
         Throwable thrown = catchThrowable(() -> taskService.findById(1L));
@@ -107,7 +108,7 @@ class TaskServiceTest {
     }
 
     @Test
-    void testFindAllTasksSuccess(){
+    void testFindAllSuccess(){
 
         Task task1 = Task.builder().id(1L).title("Task1").build();
         List<Task> tasks = List.of(task, task1);
@@ -123,7 +124,7 @@ class TaskServiceTest {
     }
 
     @Test
-    void testCreateTaskSuccess() {
+    void testCreateSuccess() {
 
         given(taskRepository.save(task)).willReturn(task);
 
@@ -138,7 +139,7 @@ class TaskServiceTest {
     }
 
     @Test
-    void testUpdateTaskSuccess() {
+    void testUpdateSuccess() {
         Task updateTask = Task.builder()
                 .id(1L)
                 .title("TaskUp")
@@ -157,7 +158,20 @@ class TaskServiceTest {
     }
 
     @Test
-    void deleteTaskByIdSuccess() {
+    void testUpdateFail() {
+        Task update = Task.builder().title("TaskUp").description("Update task").build();
+
+        given(taskRepository.findById(1L)).willReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> {
+            taskService.update(1L, update);
+        });
+
+        verify(taskRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    void deleteByIdSuccess() {
         taskService.deleteById(1L);
 
         verify(taskRepository, times(1)).deleteById(1L);

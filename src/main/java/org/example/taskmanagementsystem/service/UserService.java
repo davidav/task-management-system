@@ -34,10 +34,14 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public User update(Long id, User user) {
-        User existingUser = findById(id);
-        AppHelperUtils.copyNonNullProperties(user, existingUser);
-        return userRepository.save(existingUser);
+    public User update(Long id, User update) {
+
+        return userRepository.findById(id)
+                .map(existedUser -> {
+                    AppHelperUtils.copyNonNullProperties(update, existedUser);
+                    return userRepository.save(existedUser);
+                })
+                .orElseThrow(() -> new EntityNotFoundException("user not found"));
     }
 
     public void deleteById(Long id) {

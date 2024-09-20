@@ -41,11 +41,13 @@ private final TaskRepository taskRepository;
         return taskRepository.save(task);
     }
 
-    public Task update(Long id, Task task) {
-        Task existTask = findById(id);
-        AppHelperUtils.copyNonNullProperties(task, existTask);
-
-        return taskRepository.save(existTask);
+    public Task update(Long id, Task update) {
+        return taskRepository.findById(id)
+                .map(existedComment -> {
+                    AppHelperUtils.copyNonNullProperties(update, existedComment);
+                    return taskRepository.save(existedComment);
+                })
+                .orElseThrow(() -> new EntityNotFoundException("task not found"));
     }
 
     public void deleteById(Long id) {

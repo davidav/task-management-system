@@ -135,7 +135,6 @@ class CommentControllerTest {
 
     @Test
     void testUpdateCommentSuccess() throws Exception {
-
         Instant createAt = Instant.now();
         Comment updatedComment = Comment.builder()
                 .id(1L)

@@ -83,13 +83,13 @@ public class UserServiceTest {
     }
 
     @Test
-    public void testUpdateUser() {
+    public void testUpdateUserSuccess() {
 
-        User updateUser = User.builder().id(1L).username("UserUpdate").build();
+        User update = User.builder().id(1L).username("UserUpdate").build();
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
-        given(userRepository.save(user)).willReturn(updateUser);
+        given(userRepository.save(user)).willReturn(update);
 
-        User savedUser = userService.update(1L, updateUser);
+        User savedUser = userService.update(1L, update);
 
         assertThat(savedUser.getId()).isEqualTo(1L);
         assertThat(savedUser.getUsername()).isEqualTo("UserUpdate");
@@ -99,14 +99,27 @@ public class UserServiceTest {
     }
 
     @Test
-    public void testDeleteById() {
+    public void testUpdateUserFail() {
+
+        User update = User.builder().id(1L).username("UserUpdate").build();
+        given(userRepository.findById(1L)).willReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> {
+            userService.update(1L, update);
+        });
+
+        verify(userRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    public void testDeleteByIdSuccess() {
         userService.deleteById(1L);
 
         verify(userRepository, times(1)).deleteById(1L);
     }
 
     @Test
-    public void testDeleteById_ThrowsExceptionWhenUserNotFound() {
+    public void testDeleteByIdFail() {
 
         doThrow(new EmptyResultDataAccessException(1)).when(userRepository).deleteById(1L);
 

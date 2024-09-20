@@ -34,10 +34,13 @@ public class CommentService {
         return commentRepository.save(comment);
     }
 
-    public Comment update(Long id, Comment requiredChangesComment) {
-        Comment existedComment = findById(id);
-        AppHelperUtils.copyNonNullProperties(requiredChangesComment, existedComment);
-        return commentRepository.save(existedComment);
+    public Comment update(Long id, Comment update) {
+        return commentRepository.findById(id)
+                .map(existedComment -> {
+                    AppHelperUtils.copyNonNullProperties(update, existedComment);
+                    return commentRepository.save(existedComment);
+                })
+                .orElseThrow(() -> new EntityNotFoundException("user not found"));
     }
 
     public void deleteById(Long id) {

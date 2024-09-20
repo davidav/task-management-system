@@ -17,6 +17,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -104,8 +105,21 @@ class CommentServiceTest {
         assertThat(returnedComment.getId()).isEqualTo(1L);
         assertThat(returnedComment.getComment()).isEqualTo("Update comment");
         verify(commentRepository, times(1)).save(comment);
-
     }
+
+    @Test
+    void testUpdateFail() {
+        Comment update = Comment.builder().comment("Update comment").build();
+
+        given(commentRepository.findById(1L)).willReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> {
+            commentService.update(1L, update);
+        });
+
+        verify(commentRepository, times(1)).findById(1L);
+    }
+
 
     @Test
     void deleteByIdSuccess() {
