@@ -51,7 +51,7 @@ private final TaskRepository taskRepository;
     }
 
     public void deleteById(Long id) {
-
+        taskRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("task not found"));
         taskRepository.deleteById(id);
     }
 

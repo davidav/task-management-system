@@ -8,7 +8,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.dao.EmptyResultDataAccessException;
 
 import java.util.List;
 import java.util.Optional;
@@ -112,19 +111,23 @@ public class UserServiceTest {
     }
 
     @Test
-    public void testDeleteByIdSuccess() {
+    void deleteByIdSuccess() {
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(user));
+        doNothing().when(userRepository).deleteById(1L);
+
         userService.deleteById(1L);
 
         verify(userRepository, times(1)).deleteById(1L);
     }
 
     @Test
-    public void testDeleteByIdFail() {
+    void deleteByIdFail() {
 
-        doThrow(new EmptyResultDataAccessException(1)).when(userRepository).deleteById(1L);
+        given(userRepository.findById(2L)).willReturn(Optional.empty());
 
-        assertThrows(EmptyResultDataAccessException.class, () -> userService.deleteById(1L));
+        assertThrows(EntityNotFoundException.class, () -> userService.deleteById(2L));
 
-        verify(userRepository, times(1)).deleteById(1L);
+        verify(userRepository, times(1)).findById(2L);
     }
 }

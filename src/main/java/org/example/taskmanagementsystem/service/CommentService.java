@@ -40,10 +40,11 @@ public class CommentService {
                     AppHelperUtils.copyNonNullProperties(update, existedComment);
                     return commentRepository.save(existedComment);
                 })
-                .orElseThrow(() -> new EntityNotFoundException("user not found"));
+                .orElseThrow(() -> new EntityNotFoundException("comment not found"));
     }
 
     public void deleteById(Long id) {
+        commentRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("comment not found"));
         commentRepository.deleteById(id);
     }
 }

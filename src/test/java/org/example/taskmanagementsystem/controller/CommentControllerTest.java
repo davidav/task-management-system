@@ -23,6 +23,8 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
@@ -142,7 +144,7 @@ class CommentControllerTest {
                 .author(null)
                 .task(null)
                 .createAt(createAt)
-                .build() ;
+                .build();
         CommentRq rq = new CommentRq("CommentUp", 1L, 1L);
         given(commentRqToCommentConverter.convert(rq)).willReturn(updatedComment);
         given(commentService.update(1L, updatedComment)).willReturn(updatedComment);
@@ -178,13 +180,28 @@ class CommentControllerTest {
     @Test
     void testDeleteByIdSuccess() throws Exception {
 
+        doNothing().when(commentService).deleteById(1L);
+
         this.mockMvc.perform(delete("/api/v1/comment/1")
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
                 .andExpect(jsonPath("$.message").value("Delete success"))
-                .andExpect(jsonPath("$.data").doesNotExist());
+                .andExpect(jsonPath("$.data").isEmpty());
 
     }
 
+    @Test
+    void testDeleteByIdFail() throws Exception {
+
+        doThrow(new EntityNotFoundException("comment not found")).when(commentService).deleteById(1L);
+
+        this.mockMvc.perform(delete("/api/v1/comment/1")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(StatusCode.NOT_FOUND))
+                .andExpect(jsonPath("$.message").value("comment not found"))
+                .andExpect(jsonPath("$.data").isEmpty());
+
+    }
 }

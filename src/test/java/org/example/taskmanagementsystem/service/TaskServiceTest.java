@@ -20,8 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -172,9 +171,23 @@ class TaskServiceTest {
 
     @Test
     void deleteByIdSuccess() {
+
+        given(taskRepository.findById(1L)).willReturn(Optional.of(task));
+        doNothing().when(taskRepository).deleteById(1L);
+
         taskService.deleteById(1L);
 
         verify(taskRepository, times(1)).deleteById(1L);
+    }
+
+    @Test
+    void deleteByIdFail() {
+
+        given(taskRepository.findById(2L)).willReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> taskService.deleteById(2L));
+
+        verify(taskRepository, times(1)).findById(2L);
     }
 
 

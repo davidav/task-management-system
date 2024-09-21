@@ -26,6 +26,8 @@ import java.util.Set;
 
 import static org.hamcrest.Matchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -177,11 +179,12 @@ class UserControllerTest {
     }
 
     @Test
-    void testUpdateUserSuccess() throws Exception {
-        UserRs rs = new UserRs(1L, "admin", "admin@admin.com", Set.of(RoleType.ROLE_USER));
-        given(userRqToUserConverter.convert(rq)).willReturn(admin);
-        given(userService.update(1L, admin)).willReturn(admin);
-        given(userToUserRsConverter.convert(admin)).willReturn(rs);
+    void testUpdateSuccess() throws Exception {
+        UserRs userRs = new UserRs(1L,"userUp", "userUp@mail.com", Set.of(RoleType.ROLE_USER));
+        UserRq rq = new UserRq("userUp", "userUp@mail.com","userUp", Set.of(RoleType.ROLE_USER));
+        given(userRqToUserConverter.convert(rq)).willReturn(user);
+        given(userService.update(1L, user)).willReturn(user);
+        given(userToUserRsConverter.convert(user)).willReturn(userRs);
 
         this.mockMvc.perform(put("/api/v1/user/1")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -190,19 +193,53 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
                 .andExpect(jsonPath("$.message").value("Update success"))
-                .andExpect(jsonPath("$.data.roles[0]").value("ROLE_USER"));
+                .andExpect(jsonPath("$.data.username").value("userUp"));
+    }
 
+    @Test
+    void testUpdateFail() throws Exception {
+
+        UserRq rq = new UserRq("", "","", Set.of());
+
+        this.mockMvc.perform(put("/api/v1/user/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(rq))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(StatusCode.INVALID_ARGUMENT))
+                .andExpect(jsonPath("$.message").value("Provided arguments are not valid"))
+                .andExpect(jsonPath("$.data").exists())
+                .andExpect(jsonPath("$.data.username").value("Username must be from 3 to 10 symbols"))
+                .andExpect(jsonPath("$.data.password").value("The password length must be from 4 no more than 255 characters."))
+                .andExpect(jsonPath("$.data.email").value("Email address cannot be empty"))
+                .andExpect(jsonPath("$.data.roles").value("RoleType must not be null"));
     }
 
     @Test
     void testDeleteByIdSuccess() throws Exception {
+
+        doNothing().when(userService).deleteById(1L);
+
         this.mockMvc.perform(delete("/api/v1/user/1")
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
                 .andExpect(jsonPath("$.message").value("Delete success"))
-                .andExpect(jsonPath("$.data").doesNotExist());
+                .andExpect(jsonPath("$.data").isEmpty());
 
+    }
+
+    @Test
+    void testDeleteByIdFail() throws Exception {
+
+        doThrow(new EntityNotFoundException("user not found")).when(userService).deleteById(1L);
+
+        this.mockMvc.perform(delete("/api/v1/user/1")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(StatusCode.NOT_FOUND))
+                .andExpect(jsonPath("$.message").value("user not found"))
+                .andExpect(jsonPath("$.data").isEmpty());
 
     }
 }

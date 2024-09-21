@@ -19,8 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CommentServiceTest {
@@ -124,8 +123,21 @@ class CommentServiceTest {
     @Test
     void deleteByIdSuccess() {
 
+        given(commentRepository.findById(1L)).willReturn(Optional.of(comment));
+        doNothing().when(commentRepository).deleteById(1L);
+
         commentService.deleteById(1L);
 
         verify(commentRepository, times(1)).deleteById(1L);
+    }
+
+    @Test
+    void deleteByIdFail() {
+
+        given(commentRepository.findById(2L)).willReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> commentService.deleteById(2L));
+
+        verify(commentRepository, times(1)).findById(2L);
     }
 }
