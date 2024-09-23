@@ -12,6 +12,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -47,6 +48,9 @@ class CommentControllerTest {
 
     List<Comment> comments;
 
+    @Value("${api.endpoint.base-url}")
+    String baseUrl;
+
     @BeforeEach
     void setUp() {
         Comment c1 = Comment.builder().id(1L).comment("Comment1").build();
@@ -64,7 +68,7 @@ class CommentControllerTest {
 
         given(commentService.findById(1L)).willReturn(comments.get(0));
 
-        this.mockMvc.perform(get("/api/v1/comment/1").accept(MediaType.APPLICATION_JSON))
+        this.mockMvc.perform(get(baseUrl + "/comment/1").accept(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
                 .andExpect(jsonPath("$.message").value("Find one success"))
@@ -77,7 +81,7 @@ class CommentControllerTest {
 
         given(commentService.findById(1L)).willThrow(new EntityNotFoundException("Comment with id 1 not found"));
 
-        this.mockMvc.perform(get("/api/v1/comment/1").accept(MediaType.APPLICATION_JSON))
+        this.mockMvc.perform(get(baseUrl + "/comment/1").accept(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.flag").value(false))
                 .andExpect(jsonPath("$.code").value(StatusCode.NOT_FOUND))
                 .andExpect(jsonPath("$.message").value("Comment with id 1 not found"))
@@ -89,7 +93,7 @@ class CommentControllerTest {
 
         given(commentService.findAll()).willReturn(comments);
 
-        mockMvc.perform(get("/api/v1/comment").accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get(baseUrl + "/comment").accept(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
                 .andExpect(jsonPath("$.message").value("Find all success"))
@@ -106,7 +110,7 @@ class CommentControllerTest {
         given(commentRqToCommentConverter.convert(rq)).willReturn(comments.get(0));
         given(commentService.create(any(Comment.class))).willReturn(comments.get(0));
 
-        this.mockMvc.perform(post("/api/v1/comment")
+        this.mockMvc.perform(post(baseUrl + "/comment")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(rq))
                         .accept(MediaType.APPLICATION_JSON))
@@ -121,7 +125,7 @@ class CommentControllerTest {
     void testCreateCommentFail() throws Exception {
         CommentRq rq = new CommentRq("", null, null);
 
-        this.mockMvc.perform(post("/api/v1/comment")
+        this.mockMvc.perform(post(baseUrl + "/comment")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(rq))
                         .accept(MediaType.APPLICATION_JSON))
@@ -149,7 +153,7 @@ class CommentControllerTest {
         given(commentRqToCommentConverter.convert(rq)).willReturn(updatedComment);
         given(commentService.update(1L, updatedComment)).willReturn(updatedComment);
 
-        this.mockMvc.perform(put("/api/v1/comment/1")
+        this.mockMvc.perform(put(baseUrl + "/comment/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(rq))
                         .accept(MediaType.APPLICATION_JSON))
@@ -164,7 +168,7 @@ class CommentControllerTest {
 
         CommentRq rq = new CommentRq("", null, null);
 
-        this.mockMvc.perform(put("/api/v1/comment/1")
+        this.mockMvc.perform(put(baseUrl + "/comment/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(rq))
                         .accept(MediaType.APPLICATION_JSON))
@@ -182,7 +186,7 @@ class CommentControllerTest {
 
         doNothing().when(commentService).deleteById(1L);
 
-        this.mockMvc.perform(delete("/api/v1/comment/1")
+        this.mockMvc.perform(delete(baseUrl + "/comment/1")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
@@ -196,7 +200,7 @@ class CommentControllerTest {
 
         doThrow(new EntityNotFoundException("comment not found")).when(commentService).deleteById(1L);
 
-        this.mockMvc.perform(delete("/api/v1/comment/1")
+        this.mockMvc.perform(delete(baseUrl + "/comment/1")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.flag").value(false))
                 .andExpect(jsonPath("$.code").value(StatusCode.NOT_FOUND))

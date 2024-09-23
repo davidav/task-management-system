@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/task")
+@RequestMapping("${api.endpoint.base-url}/task")
 public class TaskController {
     private final TaskService taskService;
     private final TaskToTaskRsConvertor taskToTaskRsConvertor;

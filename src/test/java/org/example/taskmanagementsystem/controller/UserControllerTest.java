@@ -15,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -49,6 +50,9 @@ class UserControllerTest {
     UserRqToUserConverter userRqToUserConverter;
     @MockBean
     UserToUserRsConverter userToUserRsConverter;
+
+    @Value("${api.endpoint.base-url}")
+    String baseUrl;
 
     private User admin;
     private User user;
@@ -92,7 +96,7 @@ class UserControllerTest {
         given(userService.findById(1L)).willReturn(admin);
         given(userToUserRsConverter.convert(admin)).willReturn(rs);
 
-        mockMvc.perform(get("/api/v1/user/1").accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get(baseUrl + "/user/1").accept(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.timestamp").value(any(String.class)))
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(200))
@@ -108,7 +112,7 @@ class UserControllerTest {
     void findByIdFail() throws Exception {
         given(userService.findById(3L)).willThrow(new EntityNotFoundException("User with id 3 not found"));
 
-        mockMvc.perform(get("/api/v1/user/3").accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get(baseUrl + "/user/3").accept(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.flag").value(false))
                 .andExpect(jsonPath("$.code").value(StatusCode.NOT_FOUND))
                 .andExpect(jsonPath("$.message").value("User with id 3 not found"))
@@ -122,7 +126,7 @@ class UserControllerTest {
         given(userService.findAll()).willReturn(users);
         given(userToUserRsConverter.convert(ArgumentMatchers.any(User.class))).willReturn(rs);
 
-        mockMvc.perform(get("/api/v1/user").accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get(baseUrl + "/user").accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
@@ -141,7 +145,7 @@ class UserControllerTest {
         given(userToUserRsConverter.convert(admin)).willReturn(rs);
 
         mockMvc.perform(
-                        post("/api/v1/user")
+                        post(baseUrl + "/user")
                                 .accept(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(rq))
                                 .contentType(MediaType.APPLICATION_JSON))
@@ -162,7 +166,7 @@ class UserControllerTest {
         UserRq fakeRq = new UserRq("","admin","", null);
 
         mockMvc.perform(
-                        post("/api/v1/user")
+                        post(baseUrl + "/user")
                                 .accept(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(fakeRq))
                                 .contentType(MediaType.APPLICATION_JSON))
@@ -186,7 +190,7 @@ class UserControllerTest {
         given(userService.update(1L, user)).willReturn(user);
         given(userToUserRsConverter.convert(user)).willReturn(userRs);
 
-        this.mockMvc.perform(put("/api/v1/user/1")
+        this.mockMvc.perform(put(baseUrl + "/user/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(rq))
                         .accept(MediaType.APPLICATION_JSON))
@@ -201,7 +205,7 @@ class UserControllerTest {
 
         UserRq rq = new UserRq("", "","", Set.of());
 
-        this.mockMvc.perform(put("/api/v1/user/1")
+        this.mockMvc.perform(put(baseUrl + "/user/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(rq))
                         .accept(MediaType.APPLICATION_JSON))
@@ -220,7 +224,7 @@ class UserControllerTest {
 
         doNothing().when(userService).deleteById(1L);
 
-        this.mockMvc.perform(delete("/api/v1/user/1")
+        this.mockMvc.perform(delete(baseUrl + "/user/1")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
@@ -234,7 +238,7 @@ class UserControllerTest {
 
         doThrow(new EntityNotFoundException("user not found")).when(userService).deleteById(1L);
 
-        this.mockMvc.perform(delete("/api/v1/user/1")
+        this.mockMvc.perform(delete(baseUrl + "/user/1")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.flag").value(false))
                 .andExpect(jsonPath("$.code").value(StatusCode.NOT_FOUND))

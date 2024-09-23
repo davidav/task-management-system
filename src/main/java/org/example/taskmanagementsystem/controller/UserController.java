@@ -16,7 +16,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/user")
+@RequestMapping("${api.endpoint.base-url}/user")
 public class UserController {
 
     private final UserService userService;
@@ -69,14 +69,4 @@ public class UserController {
         userService.deleteById(id);
         return new Result(true,StatusCode.SUCCESS, "Delete success");
     }
-
-
-
-
-
-
-
-
-
-
 }

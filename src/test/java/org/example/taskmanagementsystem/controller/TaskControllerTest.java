@@ -12,6 +12,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -50,6 +51,9 @@ class TaskControllerTest {
     private final Instant createAt = Instant.now();
 
     private List<Task> tasks;
+
+    @Value("${api.endpoint.base-url}")
+    String baseUrl;
 
     @BeforeEach
     void setUp() {
@@ -113,7 +117,7 @@ class TaskControllerTest {
         given(taskService.findById(1L)).willReturn(tasks.get(0));
         given(taskToTaskRsConvertor.convert(tasks.get(0))).willReturn(taskRs);
 
-        this.mockMvc.perform(get("/api/v1/task/1").accept(MediaType.APPLICATION_JSON))
+        this.mockMvc.perform(get(baseUrl + "/task/1").accept(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.['flag']").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
                 .andExpect(jsonPath("$.message").value("Found one"))
@@ -127,7 +131,7 @@ class TaskControllerTest {
 
         given(taskService.findById(3L)).willThrow(new EntityNotFoundException("Comment with id 3 not found"));
 
-        this.mockMvc.perform(get("/api/v1/comment/3").accept(MediaType.APPLICATION_JSON))
+        this.mockMvc.perform(get(baseUrl + "/comment/3").accept(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.flag").value(false))
                 .andExpect(jsonPath("$.code").value(StatusCode.NOT_FOUND))
                 .andExpect(jsonPath("$.message").value("Comment with id 3 not found"))
@@ -145,7 +149,7 @@ class TaskControllerTest {
         given(taskService.findAll()).willReturn(tasks);
 
 
-        mockMvc.perform(get("/api/v1/task").accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get(baseUrl + "/task").accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
@@ -164,7 +168,7 @@ class TaskControllerTest {
         given(taskRqToTaskConvertor.convert(rq)).willReturn(tasks.get(0));
         given(taskService.create(tasks.get(0))).willReturn(tasks.get(0));
 
-        this.mockMvc.perform(post("/api/v1/task")
+        this.mockMvc.perform(post(baseUrl + "/task")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(rq))
                         .accept(MediaType.APPLICATION_JSON))
@@ -178,7 +182,7 @@ class TaskControllerTest {
     void testCreateTaskFail() throws Exception {
         TaskRq rq = new TaskRq("", "", null, null, null, null);
 
-        this.mockMvc.perform(post("/api/v1/task")
+        this.mockMvc.perform(post(baseUrl + "/task")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(rq))
                         .accept(MediaType.APPLICATION_JSON))
@@ -213,7 +217,7 @@ class TaskControllerTest {
         given(taskService.update(anyLong(), any(Task.class))).willReturn(task);
         given(taskToTaskRsConvertor.convert(any(Task.class))).willReturn(taskRs);
 
-        this.mockMvc.perform(put("/api/v1/task/1")
+        this.mockMvc.perform(put(baseUrl + "/task/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(rq))
                         .accept(MediaType.APPLICATION_JSON))
@@ -229,7 +233,7 @@ class TaskControllerTest {
 
         doNothing().when(taskService).deleteById(1L);
 
-        this.mockMvc.perform(delete("/api/v1/task/1")
+        this.mockMvc.perform(delete(baseUrl + "/task/1")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
@@ -243,7 +247,7 @@ class TaskControllerTest {
 
         doThrow(new EntityNotFoundException("task not found")).when(taskService).deleteById(1L);
 
-        this.mockMvc.perform(delete("/api/v1/task/1")
+        this.mockMvc.perform(delete(baseUrl + "/task/1")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.flag").value(false))
                 .andExpect(jsonPath("$.code").value(StatusCode.NOT_FOUND))
@@ -263,7 +267,7 @@ class TaskControllerTest {
         given(taskService.filterBy(filter)).willReturn(tasks);
         given(taskToTaskRsConvertor.convert(any(Task.class))).willReturn(taskRs);
 
-        this.mockMvc.perform(get("/api/v1/task/filter?pageNumber=0&pageSize=10&authorId=1")
+        this.mockMvc.perform(get(baseUrl + "/task/filter?pageNumber=0&pageSize=10&authorId=1")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
@@ -286,7 +290,7 @@ class TaskControllerTest {
         given(taskToTaskRsConvertor.convert(any(Task.class))).willReturn(taskRs);
 
 
-        this.mockMvc.perform(get("/api/v1/task/filter?pageNumber=0&pageSize=10&assigneeId=2")
+        this.mockMvc.perform(get(baseUrl + "/task/filter?pageNumber=0&pageSize=10&assigneeId=2")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
