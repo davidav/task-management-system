@@ -69,7 +69,7 @@ class UserControllerTest {
                 .roles(Set.of(RoleType.ROLE_ADMIN))
                 .build();
         user = User.builder()
-                .id(1L)
+                .id(2L)
                 .username("user")
                 .password("user")
                 .email("user@admin.com")
