@@ -17,7 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "task")
+@Table(name = "tasks")
 public class Task implements Serializable {
 
     @Id
@@ -49,8 +49,8 @@ public class Task implements Serializable {
     private Instant createdAt;
 
     @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE}, mappedBy = "task")
-    @ToString.Exclude
     @Builder.Default
+    @ToString.Exclude
     private List<Comment> comments = new ArrayList<>();
 
     public void addComment(Comment comment) {

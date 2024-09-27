@@ -35,14 +35,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
 class UserControllerTest {
 
     @Autowired
     MockMvc mockMvc;
     @Autowired
     ObjectMapper objectMapper;
-
     @MockBean
     UserService userService;
 
@@ -69,7 +68,7 @@ class UserControllerTest {
                 .roles(Set.of(RoleType.ROLE_ADMIN))
                 .build();
         user = User.builder()
-                .id(1L)
+                .id(2L)
                 .username("user")
                 .password("user")
                 .email("user@admin.com")
@@ -170,7 +169,6 @@ class UserControllerTest {
                                 .accept(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(fakeRq))
                                 .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(jsonPath("$.timestamp").value(any(String.class)))
                 .andExpect(jsonPath("$.flag").value(false))
                 .andExpect(jsonPath("$.code").value(StatusCode.INVALID_ARGUMENT))

@@ -7,6 +7,7 @@ import org.example.taskmanagementsystem.dto.comment.CommentRq;
 import org.example.taskmanagementsystem.dto.comment.CommentRqToCommentConverter;
 import org.example.taskmanagementsystem.entity.Comment;
 import org.example.taskmanagementsystem.service.CommentService;
+import org.example.taskmanagementsystem.util.DBDataInitializer;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
 class CommentControllerTest {
 
     @Autowired
@@ -40,6 +41,8 @@ class CommentControllerTest {
     @Autowired
     ObjectMapper objectMapper;
 
+    @MockBean
+    DBDataInitializer dbDataInitializer;
     @MockBean
     CommentRqToCommentConverter commentRqToCommentConverter;
 

@@ -7,6 +7,7 @@ import org.example.taskmanagementsystem.dto.comment.CommentRs;
 import org.example.taskmanagementsystem.dto.task.*;
 import org.example.taskmanagementsystem.entity.*;
 import org.example.taskmanagementsystem.service.TaskService;
+import org.example.taskmanagementsystem.util.DBDataInitializer;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,13 +35,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
 class TaskControllerTest {
 
     @Autowired
     MockMvc mockMvc;
     @Autowired
     ObjectMapper objectMapper;
+    @MockBean
+    DBDataInitializer dbDataInitializer;
     @MockBean
     TaskRqToTaskConvertor taskRqToTaskConvertor;
     @MockBean
