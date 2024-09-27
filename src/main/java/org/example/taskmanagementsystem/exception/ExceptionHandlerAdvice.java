@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.validation.FieldError;
@@ -34,8 +35,8 @@ public class ExceptionHandlerAdvice {
 
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    Result handleEntityNotFoundException(HttpMediaTypeNotSupportedException ex) {
-        return new Result(false, StatusCode.NOT_FOUND, ex.getMessage());
+    Result handleHttpMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException ex) {
+        return new Result(false, StatusCode.INVALID_ARGUMENT, ex.getMessage());
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
@@ -83,9 +84,16 @@ public class ExceptionHandlerAdvice {
         return new Result(false, StatusCode.FORBIDDEN, "No permission", ex.getMessage());
     }
 
+    @ExceptionHandler(InsufficientAuthenticationException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    Result handleInsufficientAuthenticationException(InsufficientAuthenticationException ex) {
+        return new Result(false, StatusCode.FORBIDDEN, "No permission", ex.getMessage());
+    }
+
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     Result handleOtherException(Exception ex) {
+        System.out.println(ex.getClass().getName());
         return new Result(false, StatusCode.INTERNAL_SERVER_ERROR, "Server internal error", ex.getMessage());
     }
 

@@ -6,6 +6,7 @@ import org.example.taskmanagementsystem.service.CommentService;
 import org.example.taskmanagementsystem.service.TaskService;
 import org.example.taskmanagementsystem.service.UserService;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Set;
 
 @Component
+@Profile("default")
 @RequiredArgsConstructor
 public class DBDataInitializer implements CommandLineRunner {
 

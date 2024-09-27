@@ -8,12 +8,14 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.io.Serializable;
 import java.time.Instant;
 
-@Entity
-@Table(name = "comments")
-@Data
+@Getter
+@Setter
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Entity
+@Table(name = "comments")
 public class Comment implements Serializable {
 
     @Id

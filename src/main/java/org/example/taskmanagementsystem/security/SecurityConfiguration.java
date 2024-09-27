@@ -64,17 +64,13 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.POST, baseUrl + "/user").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.PUT, baseUrl + "/user/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.DELETE, baseUrl + "/user/**").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.GET, baseUrl + "/comment/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")
-                        .requestMatchers(HttpMethod.POST, baseUrl + "/comment").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")
-                        .requestMatchers(HttpMethod.PUT, baseUrl + "/comment/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")
-                        .requestMatchers(HttpMethod.DELETE, baseUrl + "/comment/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")
                         .requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")).permitAll()
                         .anyRequest().authenticated()
                 )
                 .headers(headers -> headers.frameOptions().disable())// for H-2 browser console access
                 .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(httpBasic -> httpBasic.authenticationEntryPoint(customBasicAuthenticationEntryPoint))
-                .oauth2ResourceServer(outh2ResourceServer -> outh2ResourceServer.jwt()
+                .oauth2ResourceServer(auth2ResourceServer -> auth2ResourceServer.jwt()
                         .and().authenticationEntryPoint(customBearerTokenAuthenticationEntryPoint)
                         .accessDeniedHandler(customBearerTokenAccessDeniedHandler))
                 .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(
