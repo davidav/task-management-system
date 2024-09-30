@@ -99,6 +99,15 @@
 					</excludes>
 				</configuration>
 			</plugin>
+			<plugin>
+<!--				Prevent tests cases errors during Maven  -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<reuseForks>false</reuseForks>
+					<forkCount>1</forkCount>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 </project>
