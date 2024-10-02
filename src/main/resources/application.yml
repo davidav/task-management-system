@@ -1,14 +1,8 @@
 spring:
   application:
     name: task-management-system
-  datasource:
-    url: jdbc:h2:mem:tms
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
-  jpa:
-    show-sql: false
 
 api:
   endpoint:
     base-url: /api/v1
+

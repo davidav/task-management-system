@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:tms
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    show-sql: false
+
+#server:
+#  ssl:
+#    enabled: true
+#    key-store-type: PKCS12
+#    key-store: classpath:ssl/taskssl.pfx
+#    key-store-password: rootroot
