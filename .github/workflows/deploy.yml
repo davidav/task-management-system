@@ -70,12 +70,5 @@ jobs:
             cd ${{ secrets.WORK_DIR }};
             echo '--- LIST OF FILES ---';
             ls -al;
-            echo '--- DOCKER OPERATIONS ---';
-#            docker-compose down;
-            echo '--- LIST OF DOCKER CONTAINERS AFTER STOPING DOCKER CONTAINERS ---';
+            echo '--- LIST OF DOCKER CONTAINERS ---';
             docker ps;
-#            docker-compose --file docker-compose.prod.yml up -d;
-#            docker system prune --all --force;
-            echo '--- LIST OF DOCKER CONTAINERS AFTER STARTING DOCKER CONTAINERS ---';
-            docker ps;
-

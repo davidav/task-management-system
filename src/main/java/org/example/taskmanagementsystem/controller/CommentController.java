@@ -28,7 +28,6 @@ public class CommentController {
 
         return new Result(true, StatusCode.SUCCESS, "Find one success",
                 commentToCommentRsConverter.convert(commentService.findById(id)));
-
     }
 
     @GetMapping
@@ -64,5 +63,4 @@ public class CommentController {
         commentService.deleteById(id);
         return new Result(true,StatusCode.SUCCESS, "Delete success");
     }
-
 }
