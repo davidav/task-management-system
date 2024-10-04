@@ -71,7 +71,7 @@ jobs:
             echo '--- LIST OF FILES ---';
             ls -al;
             echo '--- DOCKER OPERATIONS ---';
-            docker-compose down;
+#            docker-compose down;
             echo '--- LIST OF DOCKER CONTAINERS AFTER STOPING DOCKER CONTAINERS ---';
             docker ps;
 #            docker-compose --file docker-compose.prod.yml up -d;
