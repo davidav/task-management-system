@@ -93,15 +93,14 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             echo "server hello"
-            ls
-#            if [ -f "/home/${{ secrets.WORK_DIR }}/my-container.tar" ]; then
-#                echo "Файл my-container.tar найден."
-#                # Права на файл
-#                chmod 666 /home/${{ secrets.WORK_DIR }}/my-container.tar
-#                # Загрузка образа
-#                docker load -i /home/${{ secrets.WORK_DIR }}/my-container.tar
-#                docker run -d -p 80:80 ghcr.io/${{ env.REPO }}:${{ github.sha }}
-#            else
-#                echo "Файл my-container.tar не найден!"
-#                exit 1
-#            fi
+            if [ -f "~/home/${{ secrets.WORK_DIR }}/my-container.tar" ]; then
+                echo "Файл my-container.tar найден."
+                # Права на файл
+                chmod 666 /home/${{ secrets.WORK_DIR }}/my-container.tar
+                # Загрузка образа
+                docker load -i /home/${{ secrets.WORK_DIR }}/my-container.tar
+                docker run -d -p 80:80 ghcr.io/${{ env.REPO }}:${{ github.sha }}
+            else
+                echo "Файл my-container.tar не найден!"
+                exit 1
+            fi
