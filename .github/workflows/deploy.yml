@@ -32,7 +32,7 @@ jobs:
         run: docker build -t my-container .
 
       - name: Save Docker image to a tar file
-        run: docker save -o my-container.tar my-container
+        run: docker save -o /tmp/my-container.tar my-container
 
       - name: Copy Docker image to server via SCP
         uses: appleboy/scp-action@v0.1.5
@@ -40,7 +40,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "my-container.tar"
+          source: "/tmp/my-container.tar"
           target: "/home/${{ secrets.WORK_DIR }}/my-container.tar"
 
       - name: Deploy Docker container on server via SSH
