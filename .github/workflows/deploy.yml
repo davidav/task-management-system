@@ -93,6 +93,6 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             echo "Loading container.."
-            docker load -i /home/${{ secrets.WORK_DIR }}/my-container.tar
+            docker load -i /home/${{ secrets.WORK_DIR }}/my-container.tar/my-container.tar
             docker run -d -p 80:80 ghcr.io/${{ env.REPO }}:${{ github.sha }}            
 
