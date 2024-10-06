@@ -10,8 +10,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out the repository
-        uses: actions/checkout@v4
+      - name: Checkout repository
+      - uses: actions/checkout@v4
+      - with:
+          - token: ${{ secrets.GH_TOKEN }}
 
       - name: Set environment variables
         run: echo "REPO=${{ github.repository }}" >> $GITHUB_ENV
@@ -44,34 +46,32 @@ jobs:
           tags: ghcr.io/${{ env.REPO }}:${{ github.sha }}
           file: ./Dockerfile
 
-      # Шаг аутентификации в GitHub Container Registry
       - name: Log in to GitHub Container Registry
         run: echo "${{ secrets.PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      # Шаг загрузки Docker образа из GHCR
       - name: Pull Docker image from GitHub Container Registry
-        run: docker pull ghcr.io/${{ env.REPO }}:${{ github.sha }} || true  # Добавлено || true, чтобы не прерывать выполнение в случае ошибки
+        run: docker pull ghcr.io/${{ env.REPO }}:${{ github.sha }} || true
+        # Добавлено || true, чтобы не прерывать выполнение в случае ошибки
 
-      # Шаг сохранения Docker образа в tar файл
       - name: Save Docker image to a tar file
         run: |
-          docker save -o my-container.tar ghcr.io/${{ env.REPO }}:${{ github.sha }}
-          echo "Saved Docker image to my-container.tar"
+          docker save -o task-container.tar ghcr.io/${{ env.REPO }}:${{ github.sha }}
+          echo "Saved Docker image to task-container.tar"
 
       # Шаг проверки наличия tar файла
-      - name: Check if Docker image tar file exists
-        run: |
-          if [ -f "my-container.tar" ]; then
-            echo "Файл my-container.tar найден."
-            ls -l my-container.tar
-          else
-            echo "Файл my-container.tar не найден!"
-            exit 1
-          fi
+      #      - name: Check if Docker image tar file exists
+      #        run: |
+      #          if [ -f "task-container.tar" ]; then
+      #            echo "Файл task-container.tar найден."
+      #            ls -l task-container.tar
+      #          else
+      #            echo "Файл task-container.tar не найден!"
+      #            exit 1
+      #          fi
 
       # Шаг изменения прав доступа к tar файлу
       - name: Change permissions on tar file
-        run: chmod 666 my-container.tar
+        run: chmod 666 task-container.tar
 
       # Шаг отправки tar файла на сервер
       - name: Copy Docker image to server via SCP
@@ -80,11 +80,9 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "my-container.tar"
-          target: "/home/${{ secrets.WORK_DIR }}/my-container.tar"
+          source: "task-container.tar"
+          target: "/home/${{ secrets.WORK_DIR }}/task-container.tar"
 
-
-      # Шаг разворачивания контейнера на сервере через SSH
       - name: Deploy Docker container on server via SSH
         uses: appleboy/ssh-action@v0.1.5
         with:
@@ -92,7 +90,11 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            echo "Loading container.."
-            docker load -i /home/${{ secrets.WORK_DIR }}/my-container.tar/my-container.tar
-            docker run -d -p 8080:8080 ghcr.io/${{ env.REPO }}:${{ github.sha }}            
-
+            echo "stop old container"
+            docker stop $(docker ps -a -q)
+            echo "delete old container"
+            docker rm --force
+            echo "loading new container"
+            docker load -i /home/${{ secrets.WORK_DIR }}/task-container.tar/task-container.tar
+            echo "run new container"            
+            docker run -d -p 80:80 ghcr.io/${{ env.REPO }}:${{ github.sha }}
