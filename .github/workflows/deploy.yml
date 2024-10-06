@@ -94,5 +94,5 @@ jobs:
           script: |
             echo "Loading container.."
             docker load -i /home/${{ secrets.WORK_DIR }}/my-container.tar/my-container.tar
-            docker run -d -p 80:80 ghcr.io/${{ env.REPO }}:${{ github.sha }}            
+            docker run -d -p 8080:8080 ghcr.io/${{ env.REPO }}:${{ github.sha }}            
 
