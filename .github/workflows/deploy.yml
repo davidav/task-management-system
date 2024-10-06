@@ -54,7 +54,24 @@ jobs:
 
       # Шаг сохранения Docker образа в tar файл
       - name: Save Docker image to a tar file
-        run: docker save -o my-container.tar ghcr.io/${{ env.REPO }}:${{ github.sha }}
+        run: |
+          docker save -o my-container.tar ghcr.io/${{ env.REPO }}:${{ github.sha }}
+          echo "Saved Docker image to my-container.tar"
+
+      # Шаг проверки наличия tar файла
+      - name: Check if Docker image tar file exists
+        run: |
+          if [ -f "my-container.tar" ]; then
+            echo "Файл my-container.tar найден."
+            ls -l my-container.tar
+          else
+            echo "Файл my-container.tar не найден!"
+            exit 1
+          fi
+
+      # Шаг изменения прав доступа к tar файлу
+      - name: Change permissions on tar file
+        run: chmod 666 my-container.tar
 
       # Шаг отправки tar файла на сервер
       - name: Copy Docker image to server via SCP
@@ -65,6 +82,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "my-container.tar"
           target: "/home/${{ secrets.WORK_DIR }}/my-container.tar"
+
 
       # Шаг разворачивания контейнера на сервере через SSH
       - name: Deploy Docker container on server via SSH
