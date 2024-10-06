@@ -10,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Check out the repository
         uses: actions/checkout@v4
 
@@ -51,7 +50,9 @@ jobs:
 
       # Шаг сохранения Docker образа в tar файл
       - name: Save Docker image to a tar file
-        run: docker save -o /tmp/my-container.tar ghcr.io/${{ env.REPO }}:${{ github.sha }}
+        run: |
+          docker save -o /tmp/my-container.tar ghcr.io/${{ env.REPO }}:${{ github.sha }}
+          ls -lh /tmp/my-container.tar  # Проверка, создан ли tar файл
 
       # Шаг отправки tar файла на сервер
       - name: Copy Docker image to server via SCP
@@ -71,5 +72,6 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            ls -lh /home/${{ secrets.WORK_DIR }}/my-container.tar  # Проверка, есть ли tar файл на сервере
             docker load -i /home/${{ secrets.WORK_DIR }}/my-container.tar
             docker run -d -p 80:80 ghcr.io/${{ env.REPO }}:${{ github.sha }}
