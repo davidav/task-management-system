@@ -37,8 +37,8 @@ jobs:
       - name: Copy Docker image to server via SCP
         uses: appleboy/scp-action@v0.1.5
         with:
-          host: ${{ secrets.SHH_HOST }}
-          username: ${{ secrets.SHH_USER }}
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "my-container.tar"
           target: "/home/${{ secrets.WORK_DIR }}/my-container.tar"
@@ -46,8 +46,8 @@ jobs:
       - name: Deploy Docker container on server via SSH
         uses: appleboy/ssh-action@v0.1.5
         with:
-          host: ${{ secrets.SHH_HOST }}
-          username: ${{ secrets.SHH_USER }}
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             docker load -i /home/${{ secrets.WORK_DIR }}/my-container.tar
