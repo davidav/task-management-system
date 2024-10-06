@@ -50,7 +50,21 @@ jobs:
 
       # Шаг загрузки Docker образа из GHCR
       - name: Pull Docker image from GitHub Container Registry
-        run: docker pull ghcr.io/${{ env.REPO }}:${{ github.sha }}
+        run: docker pull ghcr.io/${{ env.REPO }}:${{ github.sha }} || true  # Добавлено || true, чтобы не прерывать выполнение в случае ошибки
+
+      # Шаг сохранения Docker образа в tar файл
+      - name: Save Docker image to a tar file
+        run: docker save -o my-container.tar ghcr.io/${{ env.REPO }}:${{ github.sha }}
+
+      # Шаг отправки tar файла на сервер
+      - name: Copy Docker image to server via SCP
+        uses: appleboy/scp-action@v0.1.5
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "my-container.tar"
+          target: "/home/${{ secrets.WORK_DIR }}/my-container.tar"
 
       # Шаг разворачивания контейнера на сервере через SSH
       - name: Deploy Docker container on server via SSH
@@ -60,6 +74,5 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            docker load -i /tmp/my-container.tar
+            docker load -i /home/${{ secrets.WORK_DIR }}/my-container.tar
             docker run -d -p 80:80 ghcr.io/${{ env.REPO }}:${{ github.sha }}
-
