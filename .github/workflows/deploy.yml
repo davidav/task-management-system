@@ -81,4 +81,4 @@ jobs:
             docker load -i /home/${{ secrets.WORK_DIR }}/task-container.tar/task-container.tar
             echo "run new container"            
             docker run -d -p 80:80 ghcr.io/${{ env.REPO }}:${{ github.sha }}
-
+            echo "end" 
