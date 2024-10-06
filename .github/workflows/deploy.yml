@@ -44,21 +44,22 @@ jobs:
           tags: ghcr.io/${{ env.REPO }}:${{ github.sha }}
           file: ./Dockerfile
 
+      # Шаг аутентификации в GitHub Container Registry
+      - name: Log in to GitHub Container Registry
+        run: echo "${{ secrets.PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
       # Шаг загрузки Docker образа из GHCR
       - name: Pull Docker image from GitHub Container Registry
         run: docker pull ghcr.io/${{ env.REPO }}:${{ github.sha }}
 
-      # Шаг отправки Docker образа на сервер
-      - name: Copy Docker image to server via SSH
+      # Шаг разворачивания контейнера на сервере через SSH
+      - name: Deploy Docker container on server via SSH
         uses: appleboy/ssh-action@v0.1.5
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # Сохраняем образ в временную директорию на сервере
-            docker pull ghcr.io/${{ env.REPO }}:${{ github.sha }} -o /tmp/my-container
-
-            # Загружаем образ в Docker на сервере
-            docker load -i /tmp/my-container
+            docker load -i /tmp/my-container.tar
             docker run -d -p 80:80 ghcr.io/${{ env.REPO }}:${{ github.sha }}
+
