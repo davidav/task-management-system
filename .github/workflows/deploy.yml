@@ -73,12 +73,12 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            echo "stop old container"
+            echo "Остановка старых контейнеров"
             docker stop $(docker ps -a -q)
-            echo "delete old container"
-            docker rm --force
-            echo "loading new container"
-            docker load -i /home/${{ secrets.WORK_DIR }}/task-container.tar/task-container.tar
-            echo "run new container"            
+            echo "Удаление старых контейнеров"
+            docker rm --force $(docker ps -a -q)
+            echo "Загрузка нового контейнера"
+            docker load -i /home/${{ secrets.WORK_DIR }}/task-container.tar
+            echo "Запуск нового контейнера"
             docker run -d -p 80:80 ghcr.io/${{ env.REPO }}:${{ github.sha }}
-            echo "end" 
+            echo "Деплой завершен"
