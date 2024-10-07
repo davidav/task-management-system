@@ -79,6 +79,6 @@ jobs:
             docker rm --force $(docker ps -a -q)
             echo "Loading new container"
             docker load -i /home/${{ secrets.WORK_DIR }}/task-container.tar
-            echo "Running new container"            
+            echo "Running new container"
             docker run -d -p 80:80 ghcr.io/${{ env.REPO }}:${{ github.sha }}
             echo "Deployment complete"
