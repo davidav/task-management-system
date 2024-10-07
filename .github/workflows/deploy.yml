@@ -47,7 +47,7 @@ jobs:
           file: ./Dockerfile
 
       - name: Pull Docker image from GitHub Container Registry
-        run: docker pull ghcr.io/${{ env.REPO }}:${{ github.sha }} || true
+        run: docker pull ghcr.io/${{ env.REPO }}:${{ github.sha }}
 
       - name: Save Docker image to a tar file
         run: |
@@ -64,7 +64,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "task-container.tar"
-          target: "/home/${{ secrets.WORK_DIR }}"
+          target: "/home/docker-image/"
 
       - name: Deploy Docker container on server via SSH
         uses: appleboy/ssh-action@v0.1.5
@@ -83,7 +83,7 @@ jobs:
             echo "No containers to stop or delete"
             fi
             echo "Loading new container"
-            docker load -i /home/${{ secrets.WORK_DIR }}/task-container.tar
+            docker load -i /home/docker-image/task-container.tar
             echo "Running new container"
             docker run -d -p 80:80 ghcr.io/${{ env.REPO }}:${{ github.sha }}
             echo "Deployment complete"
