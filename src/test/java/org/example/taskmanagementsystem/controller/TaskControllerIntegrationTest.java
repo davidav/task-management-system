@@ -72,12 +72,12 @@ public class TaskControllerIntegrationTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     void testFindByIdFail() throws Exception {
 
-        this.mockMvc.perform(get(baseUrl + "/comment/4")
+        this.mockMvc.perform(get(baseUrl + "/comment/14")
                         .accept(MediaType.APPLICATION_JSON)
                         .header("Authorization", tokenAdmin))
                 .andExpect(jsonPath("$.flag").value(false))
                 .andExpect(jsonPath("$.code").value(StatusCode.NOT_FOUND))
-                .andExpect(jsonPath("$.message").value("Comment with id 4 not found"))
+                .andExpect(jsonPath("$.message").value("Comment with id 14 not found"))
                 .andExpect(jsonPath("$.data").doesNotExist());
     }
 
