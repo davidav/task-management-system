@@ -63,7 +63,7 @@ public class CommentControllerIntegrationTest {
                 .andExpect(jsonPath("$.data[0].comment").value("Comment1"))
                 .andExpect(jsonPath("$.data[1].comment").value("Comment2"))
                 .andExpect(jsonPath("$.data[2].comment").value("Comment3"))
-                .andExpect(jsonPath("$.data", Matchers.hasSize(3)));
+                .andExpect(jsonPath("$.data", Matchers.hasSize(4)));
     }
 
     @Test
@@ -77,7 +77,7 @@ public class CommentControllerIntegrationTest {
                 .andExpect(jsonPath("$.data[0].comment").value("Comment1"))
                 .andExpect(jsonPath("$.data[1].comment").value("Comment2"))
                 .andExpect(jsonPath("$.data[2].comment").value("Comment3"))
-                .andExpect(jsonPath("$.data", Matchers.hasSize(3)));
+                .andExpect(jsonPath("$.data", Matchers.hasSize(4)));
     }
 
     @Test
@@ -124,12 +124,12 @@ public class CommentControllerIntegrationTest {
 
     @Test
     void testFindByIdFail() throws Exception {
-        mockMvc.perform(get(baseUrl + "/comment/4")
+        mockMvc.perform(get(baseUrl + "/comment/14")
                         .accept(MediaType.APPLICATION_JSON)
                         .header("Authorization", tokenAdmin))
                 .andExpect(jsonPath("$.flag").value(false))
                 .andExpect(jsonPath("$.code").value(StatusCode.NOT_FOUND))
-                .andExpect(jsonPath("$.message").value("Comment with id 4 not found"))
+                .andExpect(jsonPath("$.message").value("Comment with id 14 not found"))
                 .andExpect(jsonPath("$.data").doesNotExist());
     }
 
@@ -219,7 +219,7 @@ public class CommentControllerIntegrationTest {
     @Test
     void testDeleteByIdByAdminFail() throws Exception {
 
-        this.mockMvc.perform(delete(baseUrl + "/comment/4")
+        this.mockMvc.perform(delete(baseUrl + "/comment/14")
                         .accept(MediaType.APPLICATION_JSON)
                         .header("Authorization", tokenAdmin))
                 .andExpect(jsonPath("$.flag").value(false))

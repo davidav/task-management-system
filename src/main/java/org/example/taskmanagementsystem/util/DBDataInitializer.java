@@ -67,12 +67,15 @@ public class DBDataInitializer implements CommandLineRunner {
         Comment c1 = Comment.builder().comment("Comment1").author(admin).build();
         Comment c2 = Comment.builder().comment("Comment2").author(user).build();
         Comment c3 = Comment.builder().comment("Comment3").author(admin).build();
+        Comment c4 = Comment.builder().comment("Comment4").author(admin).build();
         c1 = commentService.create(c1);
         c2 = commentService.create(c2);
         c3 = commentService.create(c3);
+        c4 = commentService.create(c4);
         t1.addComment(c1);
         t1.addComment(c2);
         t2.addComment(c3);
+        t2.addComment(c4);
         taskService.create(t1);
         taskService.create(t2);
     }
