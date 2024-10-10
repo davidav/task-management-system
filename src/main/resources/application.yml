@@ -1,7 +1,8 @@
 spring:
   application:
     name: task-management-system
-
+  profiles:
+    active: dev
 api:
   endpoint:
     base-url: /api/v1

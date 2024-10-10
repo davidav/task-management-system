@@ -1,11 +1,10 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:tms
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
+    url: ${datasource-url}
+    username: ${datasource-username}
+    password: ${datasource-passwords}
   jpa:
-    show-sql: true
+    show-sql: false
 
 #server:
 #  ssl:

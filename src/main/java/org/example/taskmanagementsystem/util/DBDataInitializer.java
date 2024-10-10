@@ -14,8 +14,8 @@ import java.util.ArrayList;
 import java.util.Set;
 
 @Component
-@Profile("default")
 @RequiredArgsConstructor
+@Profile("dev")
 public class DBDataInitializer implements CommandLineRunner {
 
     private final UserService userService;
