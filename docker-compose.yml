@@ -1,20 +1,40 @@
-#version: '3'
-#
-#services:
-#  postgres:
-#    image: postgres:12.3
-#    ports:
-#      - "5432:5432"
-#    environment:
-#      - POSTGRES_USER=postgres
-#      - POSTGRES_PASSWORD=postgres
-#      - POSTGRES_DB=booking
-#
-#  task-management-system:
-#    container_name: "tms-app"
+version: '3.8'
+services:
+  postgres:
+    image: postgres:12.3
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=tsm
+
+  pgadmin:
+    container_name: pgadmin4_container
+    image: dpage/pgadmin4:7
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+
+#  tsm-backend:
+#    container_name: "tms-backend"
 #    build:
+#      context: .
 #      dockerfile: Dockerfile
 #    ports:
-#      - "8080:8080"
+#      - "8181:8181"
 #    depends_on:
 #      - postgres
+#    environment:
+#      - SPRING_DATA_SOURCE_URL=jdbc:postgresql://postgres/tsm
+#      - SERVER_PORT=8181
+
+volumes:
+  pgadmin-data:
+
+
