@@ -80,4 +80,4 @@ jobs:
             docker load -i /home/docker-image/task-container.tar
             echo "Running container from github"
             docker run --name tsm_app -d --network tsm-network -p 8181:8181 ghcr.io/${{ env.REPO }}:${{ github.sha }}
-            echo "Deployment cdoomplete"
+            echo "Deployment complete"
