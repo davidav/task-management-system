@@ -73,17 +73,11 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            echo "Checking for existing containers"
-            if [ "$(docker ps -a -q)" ]; then
-            echo "Stopping old container"
-            docker stop $(docker ps -a -q)
-            echo "Deleting old container"
-            docker rm --force $(docker ps -a -q)
-            else
-            echo "No containers to stop or delete"
-            fi
-            echo "Loading new container"
+            echo "Stop and delete old container"
+            docker stop tsm_app
+            docker rm tsm_app            
+            echo "Loading container from github"
             docker load -i /home/docker-image/task-container.tar
-            echo "Running new container"
-            docker run -d -p 80:80 ghcr.io/${{ env.REPO }}:${{ github.sha }}
-            echo "Deployment complete"
+            echo "Running container from github"
+            docker run --name tsm_app -d -p 8181:8181 ghcr.io/${{ env.REPO }}:${{ github.sha }}
+            echo "Deployment cdoomplete"
