@@ -1,13 +1,30 @@
 server:
-  port: 88181
+  port: 8181
 
 spring:
   datasource:
-    url: ${datasource-url}
-    username: ${datasource-username}
-    password: ${datasource-passwords}
+    url: jdbc:postgresql://31.128.41.84/:5432/tsm
+    username: postgres
+    password: postgres
+    hikari:
+      schema: tsm
+      connection-init-sql: CREATE SCHEMA IF NOT EXISTS tsm
+      connection-timeout: 10000
+  application:
+    name: task-management-system
   jpa:
-    show-sql: false
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: true
+  liquibase:
+    enabled: true
+    drop-first: false
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    default-schema: public
 
 #server:
 #  ssl:

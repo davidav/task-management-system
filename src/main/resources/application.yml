@@ -2,7 +2,8 @@
 spring:
   application:
     name: task-management-system
-
+  profiles:
+    active: prod
 api:
   endpoint:
     base-url: /api/v1
