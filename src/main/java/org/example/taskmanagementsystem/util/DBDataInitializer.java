@@ -14,8 +14,8 @@ import java.util.ArrayList;
 import java.util.Set;
 
 @Component
-@Profile("default")
 @RequiredArgsConstructor
+ @Profile("dev")
 public class DBDataInitializer implements CommandLineRunner {
 
     private final UserService userService;
@@ -25,7 +25,7 @@ public class DBDataInitializer implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
 
         User admin = User.builder()
                 .username("admin")

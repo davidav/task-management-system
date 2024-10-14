@@ -61,6 +61,7 @@ public class SecurityConfiguration {
         return http
                 .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
                         .requestMatchers(HttpMethod.GET, baseUrl + "/task/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, baseUrl + "/user/login").permitAll()
                         .requestMatchers(HttpMethod.GET, baseUrl + "/user/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.POST, baseUrl + "/user").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.PUT, baseUrl + "/user/**").hasAuthority("ROLE_ADMIN")

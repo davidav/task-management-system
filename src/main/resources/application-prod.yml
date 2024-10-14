@@ -1,0 +1,17 @@
+server:
+  port: 88181
+
+spring:
+  datasource:
+    url: ${datasource-url}
+    username: ${datasource-username}
+    password: ${datasource-passwords}
+  jpa:
+    show-sql: false
+
+#server:
+#  ssl:
+#    enabled: true
+#    key-store-type: PKCS12
+#    key-store: classpath:ssl/taskssl.pfx
+#    key-store-password: rootroot

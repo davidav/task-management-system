@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 public class JwtProvider {
 
     private final JwtEncoder jwtEncoder;
+
     public String createToken(Authentication authentication) {
         Instant now = Instant.now();
         long expiresIn = 2;
