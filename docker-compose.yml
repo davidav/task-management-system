@@ -2,17 +2,21 @@ version: '3.8'
 services:
   postgres:
     image: postgres:12.3
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tsm
     ports:
       - "5432:5432"
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=tsm
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 2
 
   pgadmin:
     container_name: pgadmin4_container
     image: dpage/pgadmin4:7
-    restart: always
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@admin.com
       PGADMIN_DEFAULT_PASSWORD: root
@@ -20,21 +24,23 @@ services:
       - "5050:80"
     volumes:
       - pgadmin-data:/var/lib/pgadmin
+    restart: always
 
-#  tsm-backend:
-#    container_name: "tms-backend"
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#    ports:
-#      - "8181:8181"
-#    depends_on:
-#      - postgres
-#    environment:
-#      - SPRING_DATA_SOURCE_URL=jdbc:postgresql://postgres/tsm
-#      - SERVER_PORT=8181
+  tsm-backend:
+    container_name: tms-backend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      SERVER_PORT: 8181
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/tsm
+      SPRING_PROFILES_ACTIVE: postgresql
+    ports:
+      - "8181:8181"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: on-failure
 
 volumes:
   pgadmin-data:
-
-
