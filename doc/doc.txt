@@ -4,3 +4,7 @@ endpoint:
 		body empty
 
 	-- basic authentication use header and return Authentication object with user principal then pass into service and build jwt token
+
+
+	#      - name: Static code analysis with SpotBugs
+    #        run: mvn spotbugs:check
