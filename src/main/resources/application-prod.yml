@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://31.128.41.84/:5432/tsm
+    url: jdbc:postgresql://postgres:5432/tsm
     username: postgres
     password: postgres
     hikari:
