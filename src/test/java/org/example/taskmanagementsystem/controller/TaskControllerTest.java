@@ -158,7 +158,7 @@ class TaskControllerTest {
                 .andDo(print())
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
-                .andExpect(jsonPath("$.message").value("Found all"))
+                .andExpect(jsonPath("$.message").value("Found all tasks"))
                 .andExpect(jsonPath("$.data").exists())
                 .andExpect(jsonPath("$.data[0].title").value("Task1"))
                 .andExpect(jsonPath("$.data[0].commentsRs[0].comment").value("Comment1"))
