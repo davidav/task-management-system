@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   postgres:
     image: postgres:12.3
@@ -46,4 +45,7 @@ volumes:
   pgadmin-data:
 
 networks:
-  tsm-network:
+  default:
+    name: tsm-network
+    external: true
+
