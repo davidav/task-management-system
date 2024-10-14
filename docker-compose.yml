@@ -44,3 +44,6 @@ services:
 
 volumes:
   pgadmin-data:
+
+networks:
+  tsm-network:
