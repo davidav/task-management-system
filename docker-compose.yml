@@ -1,10 +1,12 @@
+version: '3.8'
+
 services:
   postgres:
     image: postgres:12.3
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: tsm
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
     healthcheck:
@@ -12,13 +14,15 @@ services:
       interval: 10s
       timeout: 5s
       retries: 2
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
 
   pgadmin:
     container_name: pgadmin4_container
     image: dpage/pgadmin4:7
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: root
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     ports:
       - "5050:80"
     volumes:
@@ -31,21 +35,26 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
-      SERVER_PORT: 8181
+      SERVER_PORT: ${SERVER_PORT}
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/tsm
-      SPRING_PROFILES_ACTIVE: postgresql
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
     ports:
-      - "8181:8181"
+      - "${SERVER_PORT}:${SERVER_PORT}"
     depends_on:
       postgres:
         condition: service_healthy
     restart: on-failure
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${SERVER_PORT}/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
 volumes:
   pgadmin-data:
+  postgres-data:
 
 networks:
   default:
     name: tsm-network
     external: true
-

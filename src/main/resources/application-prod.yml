@@ -3,15 +3,21 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://postgres:5432/tsm
-    username: postgres
-    password: postgres
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://postgres:5432/tsm}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
     hikari:
       schema: tsm
       connection-init-sql: CREATE SCHEMA IF NOT EXISTS tsm
       connection-timeout: 10000
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
   application:
     name: task-management-system
+
   jpa:
     hibernate:
       ddl-auto: none
@@ -19,16 +25,15 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
+        use_sql_comments: true
+        generate_statistics: true
+        cache.use_second_level_cache: true
+        cache.use_query_cache: false
+        cache.region.factory_class: org.hibernate.cache.jcache.JCacheRegionFactory
     show-sql: true
+
   liquibase:
     enabled: true
     drop-first: false
     change-log: classpath:db/changelog/db.changelog-master.xml
     default-schema: tsm
-
-#server:
-#  ssl:
-#    enabled: true
-#    key-store-type: PKCS12
-#    key-store: classpath:ssl/taskssl.pfx
-#    key-store-password: rootroot
