@@ -34,7 +34,7 @@ public class TaskController {
                 map(taskToTaskRsConvertor::convert)
                 .toList();
 
-        return new Result(true, StatusCode.SUCCESS, "Found all", taskRsList);
+        return new Result(true, StatusCode.SUCCESS, "Found all tasks", taskRsList);
     }
 
     @PostMapping
