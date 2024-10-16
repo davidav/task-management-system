@@ -91,8 +91,9 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             if [ $(docker ps -q -f name=tsm_app) ]; then
-              docker image prune -a -f
-              echo "tsm_app is running"
+            docker image prune -a -f
+            echo "tsm_app is running"
             else
-              echo "tsm_app failed to start" && exit 1
-
+            echo "tsm_app failed to start"
+            exit 1
+            fi
