@@ -82,3 +82,17 @@ jobs:
             echo "Running container from github"
             docker run --name tsm_app -d --network tsm-network -p 8181:8181 ghcr.io/${{ env.REPO }}:${{ github.sha }}
             echo "Deployment complete"
+
+      - name: Check if container is running
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            if [ $(docker ps -q -f name=tsm_app) ]; then
+              docker image prune -a -f
+              echo "tsm_app is running"
+            else
+              echo "tsm_app failed to start" && exit 1
+
