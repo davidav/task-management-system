@@ -17,9 +17,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -150,20 +155,26 @@ class TaskControllerTest {
         CommentRs commentRs2 = new CommentRs(2L, "Comment2", 2L, 1L, createAt);
         TaskRs taskRs = new TaskRs(1L, "Task1", "description task1", Status.WAITING, Priority.LOW,
                 1L, 1L, Instant.now(), List.of(commentRs1, commentRs2));
+        Pageable pageable = PageRequest.of(0, 20);
+        PageImpl<Task> taskPage = new PageImpl<>(tasks, pageable, tasks.size());
         given(taskToTaskRsConvertor.convert(any(Task.class))).willReturn(taskRs);
-        given(taskService.findAll()).willReturn(tasks);
+        given(taskService.findAll(any(Pageable.class))).willReturn(taskPage);
+
+        MultiValueMap <String, String> requestParams = new LinkedMultiValueMap<>();
+        requestParams.add("page","0");
+        requestParams.add("size","20");
 
 
-        mockMvc.perform(get(baseUrl + "/task").accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get(baseUrl + "/task").accept(MediaType.APPLICATION_JSON).params(requestParams))
                 .andDo(print())
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
                 .andExpect(jsonPath("$.message").value("Found all"))
-                .andExpect(jsonPath("$.data").exists())
-                .andExpect(jsonPath("$.data[0].title").value("Task1"))
-                .andExpect(jsonPath("$.data[0].commentsRs[0].comment").value("Comment1"))
-                .andExpect(jsonPath("$.data[0].commentsRs[1].comment").value("Comment2"))
-                .andExpect(jsonPath("$.data", Matchers.hasSize(2)));
+                .andExpect(jsonPath("$.data.content").exists())
+                .andExpect(jsonPath("$.data.content[0].title").value("Task1"))
+                .andExpect(jsonPath("$.data.content[0].commentsRs[0].comment").value("Comment1"))
+                .andExpect(jsonPath("$.data.content[0].commentsRs[1].comment").value("Comment2"))
+                .andExpect(jsonPath("$.data.content", Matchers.hasSize(2)));
     }
 
     @Test
