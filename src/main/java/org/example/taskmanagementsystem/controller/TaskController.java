@@ -7,6 +7,8 @@ import org.example.taskmanagementsystem.dto.StatusCode;
 import org.example.taskmanagementsystem.dto.task.*;
 import org.example.taskmanagementsystem.entity.Task;
 import org.example.taskmanagementsystem.service.TaskService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,14 +29,13 @@ public class TaskController {
     }
 
     @GetMapping
-    public Result findAll() {
+    public Result findAll(Pageable pageable) {
 
-        List<Task> tasks = taskService.findAll();
-        List<TaskRs> taskRsList = tasks.stream().
-                map(taskToTaskRsConvertor::convert)
-                .toList();
+        Page<Task> tasksPage = taskService.findAll(pageable);
+        Page<TaskRs> taskRsPage = tasksPage.
+                map(taskToTaskRsConvertor::convert);
 
-        return new Result(true, StatusCode.SUCCESS, "Found all", taskRsList);
+        return new Result(true, StatusCode.SUCCESS, "Found all", taskRsPage);
     }
 
     @PostMapping

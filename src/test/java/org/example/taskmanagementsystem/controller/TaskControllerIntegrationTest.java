@@ -92,11 +92,11 @@ public class TaskControllerIntegrationTest {
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
                 .andExpect(jsonPath("$.message").value("Found all"))
-                .andExpect(jsonPath("$.data").exists())
-                .andExpect(jsonPath("$.data[0].title").value("Task1"))
-                .andExpect(jsonPath("$.data[0].commentsRs[0].comment").value("Comment1"))
-                .andExpect(jsonPath("$.data[0].commentsRs[1].comment").value("Comment2"))
-                .andExpect(jsonPath("$.data", Matchers.hasSize(2)));
+                .andExpect(jsonPath("$.data.content").exists())
+                .andExpect(jsonPath("$.data.content[0].title").value("Task1"))
+                .andExpect(jsonPath("$.data.content[0].commentsRs[0].comment").value("Comment1"))
+                .andExpect(jsonPath("$.data.content[0].commentsRs[1].comment").value("Comment2"))
+                .andExpect(jsonPath("$.data.content", Matchers.hasSize(2)));
     }
 
     @Test
@@ -115,7 +115,7 @@ public class TaskControllerIntegrationTest {
                 .andExpect(jsonPath("$.data").exists());
         mockMvc.perform(get(baseUrl + "/task")
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.data", Matchers.hasSize(3)));
+                .andExpect(jsonPath("$.data.content", Matchers.hasSize(3)));
     }
 
     @Test
@@ -135,7 +135,7 @@ public class TaskControllerIntegrationTest {
                 .andExpect(jsonPath("$.data").exists());
         mockMvc.perform(get(baseUrl + "/task")
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.data", Matchers.hasSize(3)));
+                .andExpect(jsonPath("$.data.content", Matchers.hasSize(3)));
     }
 
     @Test
@@ -187,7 +187,7 @@ public class TaskControllerIntegrationTest {
                 .andExpect(jsonPath("$.data").isEmpty());
         mockMvc.perform(get(baseUrl + "/task")
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.data", Matchers.hasSize(1)));
+                .andExpect(jsonPath("$.data.content", Matchers.hasSize(1)));
 
     }
 

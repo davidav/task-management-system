@@ -9,7 +9,9 @@ import org.example.taskmanagementsystem.repo.TaskRepository;
 import org.example.taskmanagementsystem.repo.TaskSpecification;
 import org.example.taskmanagementsystem.util.AppHelperUtils;
 import org.slf4j.helpers.MessageFormatter;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -59,6 +61,11 @@ private final TaskRepository taskRepository;
         Specification<Task> spec = TaskSpecification.withFilter(filter);
         PageRequest pageable = PageRequest.of(filter.getPageNumber(), filter.getPageSize());
         return taskRepository.findAll(spec, pageable).getContent();
+    }
+
+    public Page<Task> findAll(Pageable pageable) {
+
+        return taskRepository.findAll(pageable);
     }
 }
 
