@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -67,10 +68,15 @@ public class TaskController {
     @GetMapping("/filter")
     public Result findAllByFilter(@Valid TaskFilter filter) {
 
-        List<Task> tasks = taskService.filterBy(filter);
-        List<TaskRs> taskRsList = tasks.stream().
-                map(taskToTaskRsConvertor::convert)
-                .toList();
-        return new Result(true, StatusCode.SUCCESS, "Filtered tasks", taskRsList);
+        Page<Task> taskPage = taskService.filterBy(filter);
+        Page<TaskRs> taskRsPage = taskPage.map(taskToTaskRsConvertor::convert);
+        return new Result(true, StatusCode.SUCCESS, "Filtered tasks", taskRsPage);
+    }
+
+    @PostMapping("/search")
+    public Result findTasksByCriteria(@RequestBody Map<String, String> searchCriteria, Pageable pageable) throws IllegalAccessException {
+        Page<Task> taskPage = taskService.findByCriteria(searchCriteria, pageable);
+        Page<TaskRs> taskRsPage = taskPage.map(taskToTaskRsConvertor::convert);
+        return new Result(true, StatusCode.SUCCESS, "Search result", taskRsPage);
     }
 }

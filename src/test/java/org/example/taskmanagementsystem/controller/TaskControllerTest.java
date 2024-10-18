@@ -1,5 +1,6 @@
 package org.example.taskmanagementsystem.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import org.example.taskmanagementsystem.dto.StatusCode;
@@ -12,11 +13,13 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,9 +30,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -279,20 +280,23 @@ class TaskControllerTest {
         TaskRs taskRs = new TaskRs(1L, "Task1", "description task1", Status.WAITING, Priority.LOW,
                 1L, 1L, Instant.now(), List.of(commentRs1, commentRs2));
         TaskFilter filter = new TaskFilter(10,0,1L, null);
+        Pageable pageable = PageRequest.of(0, 20);
+        PageImpl<Task> taskPage = new PageImpl<>(tasks, pageable, tasks.size());
 
-        given(taskService.filterBy(filter)).willReturn(tasks);
         given(taskToTaskRsConvertor.convert(any(Task.class))).willReturn(taskRs);
+        given(taskService.filterBy(Mockito.any(TaskFilter.class))).willReturn(taskPage);
+
 
         this.mockMvc.perform(get(baseUrl + "/task/filter?pageNumber=0&pageSize=10&authorId=1")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
                 .andExpect(jsonPath("$.message").value("Filtered tasks"))
-                .andExpect(jsonPath("$.data").exists())
-                .andExpect(jsonPath("$.data[0].title").value("Task1"))
-                .andExpect(jsonPath("$.data[0].commentsRs[0].comment").value("Comment1"))
-                .andExpect(jsonPath("$.data[0].commentsRs[1].comment").value("Comment2"))
-                .andExpect(jsonPath("$.data", Matchers.hasSize(2)));
+                .andExpect(jsonPath("$.data.content").exists())
+                .andExpect(jsonPath("$.data.content[0].title").value("Task1"))
+                .andExpect(jsonPath("$.data.content[0].commentsRs[0].comment").value("Comment1"))
+                .andExpect(jsonPath("$.data.content[0].commentsRs[1].comment").value("Comment2"))
+                .andExpect(jsonPath("$.data.content", Matchers.hasSize(2)));
     }
 
     @Test
@@ -302,18 +306,21 @@ class TaskControllerTest {
         TaskRs taskRs = new TaskRs(2L, "Task2", "description task2", Status.WAITING, Priority.LOW,
                 1L, 2L, Instant.now(), List.of(commentRs1));
         TaskFilter filter = new TaskFilter(10,0,null, 2L);
-        given(taskService.filterBy(filter)).willReturn(tasks);
-        given(taskToTaskRsConvertor.convert(any(Task.class))).willReturn(taskRs);
+        Pageable pageable = PageRequest.of(0, 20);
+        PageImpl<Task> taskPage = new PageImpl<>(tasks, pageable, tasks.size());
 
+        given(taskToTaskRsConvertor.convert(any(Task.class))).willReturn(taskRs);
+        given(taskService.filterBy(Mockito.any(TaskFilter.class))).willReturn(taskPage);
 
         this.mockMvc.perform(get(baseUrl + "/task/filter?pageNumber=0&pageSize=10&assigneeId=2")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
                 .andExpect(jsonPath("$.message").value("Filtered tasks"))
-                .andExpect(jsonPath("$.data").exists())
-                .andExpect(jsonPath("$.data[0].title").value("Task2"))
-                .andExpect(jsonPath("$.data[0].commentsRs[0].comment").value("Comment1"))
-                .andExpect(jsonPath("$.data", Matchers.hasSize(2)));
+                .andExpect(jsonPath("$.data.content").exists())
+                .andExpect(jsonPath("$.data.content[0].title").value("Task2"))
+                .andExpect(jsonPath("$.data.content[0].commentsRs[0].comment").value("Comment1"))
+                .andExpect(jsonPath("$.data.content", Matchers.hasSize(2)));
     }
+
 }

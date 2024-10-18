@@ -19,6 +19,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -147,7 +152,6 @@ public class TaskControllerIntegrationTest {
                         .content(objectMapper.writeValueAsString(rq))
                         .accept(MediaType.APPLICATION_JSON)
                         .header("Authorization", tokenAdmin))
-                .andDo(print())
                 .andExpect(jsonPath("$.flag").value(false))
                 .andExpect(jsonPath("$.code").value(StatusCode.INVALID_ARGUMENT))
                 .andExpect(jsonPath("$.message").value("Provided arguments are not valid"))
@@ -214,11 +218,11 @@ public class TaskControllerIntegrationTest {
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
                 .andExpect(jsonPath("$.message").value("Filtered tasks"))
-                .andExpect(jsonPath("$.data").exists())
-                .andExpect(jsonPath("$.data[0].title").value("Task1"))
-                .andExpect(jsonPath("$.data[0].commentsRs[0].comment").value("Comment1"))
-                .andExpect(jsonPath("$.data[0].commentsRs[1].comment").value("Comment2"))
-                .andExpect(jsonPath("$.data", Matchers.hasSize(1)));
+                .andExpect(jsonPath("$.data.content").exists())
+                .andExpect(jsonPath("$.data.content[0].title").value("Task1"))
+                .andExpect(jsonPath("$.data.content[0].commentsRs[0].comment").value("Comment1"))
+                .andExpect(jsonPath("$.data.content[0].commentsRs[1].comment").value("Comment2"))
+                .andExpect(jsonPath("$.data.content", Matchers.hasSize(1)));
     }
 
     @Test
@@ -231,9 +235,55 @@ public class TaskControllerIntegrationTest {
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
                 .andExpect(jsonPath("$.message").value("Filtered tasks"))
-                .andExpect(jsonPath("$.data").exists())
-                .andExpect(jsonPath("$.data[0].title").value("Task1"))
-                .andExpect(jsonPath("$.data[0].commentsRs[0].comment").value("Comment1"))
-                .andExpect(jsonPath("$.data", Matchers.hasSize(1)));
+                .andExpect(jsonPath("$.data.content").exists())
+                .andExpect(jsonPath("$.data.content[0].title").value("Task1"))
+                .andExpect(jsonPath("$.data.content[0].commentsRs[0].comment").value("Comment1"))
+                .andExpect(jsonPath("$.data.content", Matchers.hasSize(1)));
+    }
+
+
+    @Test
+    void testSearchTasksByDescription() throws Exception {
+        Map<String, String> searchCriteria = new HashMap<>();
+        searchCriteria.put("description", "descr");
+        MultiValueMap<String, String> requestParams = new LinkedMultiValueMap<>();
+        requestParams.add("page","0");
+        requestParams.add("size","2");
+        requestParams.add("sort","title,asc");
+
+
+        mockMvc.perform(post(baseUrl + "/task/search")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(searchCriteria))
+                        .params(requestParams)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Search result"))
+                .andExpect(jsonPath("$.data.content").exists())
+                .andExpect(jsonPath("$.data.content", Matchers.hasSize(2)));
+    }
+
+    @Test
+    void testSearchTasksByDescriptionAndTitle() throws Exception {
+        Map<String, String> searchCriteria = new HashMap<>();
+        searchCriteria.put("title", "Task1");
+        searchCriteria.put("description", "descr");
+        MultiValueMap<String, String> requestParams = new LinkedMultiValueMap<>();
+        requestParams.add("page","0");
+        requestParams.add("size","2");
+        requestParams.add("sort","title,asc");
+
+
+        mockMvc.perform(post(baseUrl + "/task/search")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(searchCriteria))
+                        .params(requestParams)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Search result"))
+                .andExpect(jsonPath("$.data.content").exists())
+                .andExpect(jsonPath("$.data.content", Matchers.hasSize(1)));
     }
 }

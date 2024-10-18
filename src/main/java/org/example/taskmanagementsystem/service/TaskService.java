@@ -4,9 +4,12 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.taskmanagementsystem.dto.task.TaskFilter;
+import org.example.taskmanagementsystem.entity.Priority;
+import org.example.taskmanagementsystem.entity.Status;
 import org.example.taskmanagementsystem.entity.Task;
 import org.example.taskmanagementsystem.repo.TaskRepository;
 import org.example.taskmanagementsystem.repo.TaskSpecification;
+import org.example.taskmanagementsystem.repo.TaskSpecs;
 import org.example.taskmanagementsystem.util.AppHelperUtils;
 import org.slf4j.helpers.MessageFormatter;
 import org.springframework.data.domain.Page;
@@ -14,9 +17,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional
@@ -24,7 +29,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TaskService {
 
-private final TaskRepository taskRepository;
+    private final TaskRepository taskRepository;
 
 
     public Task findById(Long id) {
@@ -57,15 +62,61 @@ private final TaskRepository taskRepository;
         taskRepository.deleteById(id);
     }
 
-    public List<Task> filterBy(TaskFilter filter) {
+    public Page<Task> filterBy(TaskFilter filter) {
         Specification<Task> spec = TaskSpecification.withFilter(filter);
         PageRequest pageable = PageRequest.of(filter.getPageNumber(), filter.getPageSize());
-        return taskRepository.findAll(spec, pageable).getContent();
+        return taskRepository.findAll(spec, pageable);
     }
 
     public Page<Task> findAll(Pageable pageable) {
 
         return taskRepository.findAll(pageable);
+    }
+
+    public Page<Task> findByCriteria(Map<String, String> searchCriteria, Pageable pageable) throws IllegalAccessException {
+        Specification<Task> spec = Specification.where(null);
+
+        if (StringUtils.hasLength(searchCriteria.get("id"))) {
+            spec = spec.and(TaskSpecs.hasId(Long.valueOf(searchCriteria.get("id"))));
+        }
+
+        if (StringUtils.hasLength(searchCriteria.get("title"))) {
+            spec = spec.and(TaskSpecs.containsTitle(searchCriteria.get("title")));
+        }
+
+        if (StringUtils.hasLength(searchCriteria.get("description"))) {
+            spec = spec.and(TaskSpecs.containsDescription(searchCriteria.get("description")));
+        }
+
+        if (StringUtils.hasLength(searchCriteria.get("status"))) {
+            try {
+                Status status = Status.valueOf(searchCriteria.get("status").toUpperCase());
+                spec = spec.and(TaskSpecs.hasStatus(status));
+            }catch (IllegalArgumentException ex){
+                throw new IllegalAccessException("Invalid status value:" + searchCriteria.get("status"));
+            }
+
+        }
+
+        if (StringUtils.hasLength(searchCriteria.get("priority"))) {
+            try {
+                Priority priority = Priority.valueOf(searchCriteria.get("priority").toUpperCase());
+                spec = spec.and(TaskSpecs.hasPriority(priority));
+            }catch (IllegalArgumentException ex){
+                throw new IllegalAccessException("Invalid priority value:" + searchCriteria.get("priority"));
+            }
+
+        }
+
+        if (StringUtils.hasLength(searchCriteria.get("authorUsername"))) {
+            spec = spec.and(TaskSpecs.hasAuthorUsername(searchCriteria.get("authorUsername")));
+        }
+
+        if (StringUtils.hasLength(searchCriteria.get("assigneeUsername"))) {
+            spec = spec.and(TaskSpecs.hasAssigneeUsername(searchCriteria.get("assigneeUsername")));
+        }
+
+        return taskRepository.findAll(spec, pageable);
     }
 }
 
