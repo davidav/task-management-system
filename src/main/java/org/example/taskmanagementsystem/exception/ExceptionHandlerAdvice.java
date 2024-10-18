@@ -33,6 +33,12 @@ public class ExceptionHandlerAdvice {
         return new Result(false, StatusCode.NOT_FOUND, ex.getMessage());
     }
 
+    @ExceptionHandler(IllegalAccessException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    Result handleIllegalAccessException(IllegalAccessException ex) {
+        return new Result(false, StatusCode.INVALID_ARGUMENT,"Provided arguments are not valid", ex.getMessage());
+    }
+
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     Result handleHttpMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException ex) {
