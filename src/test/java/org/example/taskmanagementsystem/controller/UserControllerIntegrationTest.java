@@ -58,19 +58,19 @@ public class UserControllerIntegrationTest {
         tokenUser = "Bearer " + jsonUser.getJSONObject("data").getString("token");
     }
 
-//    @Test
-//    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
-//    void testFindAllByAdminSuccess() throws Exception {
-//        mockMvc.perform(get(baseUrl + "/user")
-//                        .accept(MediaType.APPLICATION_JSON)
-//                        .header("Authorization", tokenAdmin))
-//                .andExpect(jsonPath("$.flag").value(true))
-//                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
-//                .andExpect(jsonPath("$.message").value("Found all"))
-//                .andExpect(jsonPath("$.data[0].username").value("admin"))
-//                .andExpect(jsonPath("$.data[1].username").value("user"))
-//                .andExpect(jsonPath("$.data", Matchers.hasSize(2)));
-//    }
+    @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    void testFindAllByAdminSuccess() throws Exception {
+        mockMvc.perform(get(baseUrl + "/user")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", tokenAdmin))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Found all"))
+                .andExpect(jsonPath("$.data[0].username").value("admin"))
+                .andExpect(jsonPath("$.data[1].username").value("user"))
+                .andExpect(jsonPath("$.data", Matchers.hasSize(2)));
+    }
 
     @Test
     void testFindAllByUserFail() throws Exception {
@@ -93,7 +93,21 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     void testFindByIdByAdminSuccess() throws Exception {
+        mockMvc.perform(get(baseUrl + "/user/1")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", tokenAdmin))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Found one"))
+                .andExpect(jsonPath("$.data").exists())
+                .andExpect(jsonPath("$.data.username").value("admin"));
+    }
+
+    @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    void testFindByIdByUserAccessingOwnInfoSuccess() throws Exception {
         mockMvc.perform(get(baseUrl + "/user/1")
                         .accept(MediaType.APPLICATION_JSON)
                         .header("Authorization", tokenAdmin))
@@ -221,19 +235,19 @@ public class UserControllerIntegrationTest {
                 .andExpect(jsonPath("$.data.roles").value("RoleType must not be null"));
     }
 
-//    @Test
-//    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-//    void testDeleteByIdSuccess() throws Exception {
-//
-//
-//        this.mockMvc.perform(delete(baseUrl + "/user/2")
-//                        .accept(MediaType.APPLICATION_JSON)
-//                        .header("Authorization", tokenAdmin))
-//                .andExpect(jsonPath("$.flag").value(true))
-//                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
-//                .andExpect(jsonPath("$.message").value("Delete success"))
-//                .andExpect(jsonPath("$.data").isEmpty());
-//    }
+    @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    void testDeleteByIdSuccess() throws Exception {
+
+
+        this.mockMvc.perform(delete(baseUrl + "/user/2")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", tokenAdmin))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Delete success"))
+                .andExpect(jsonPath("$.data").isEmpty());
+    }
 
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
