@@ -8,27 +8,31 @@
 
         <addForeignKeyConstraint baseTableName="comments"
                                  baseColumnNames="author_id"
+                                 constraintName="fk_comments_author"
                                  referencedTableName="users"
                                  referencedColumnNames="id"
-                                 constraintName="fk_comments_author"/>
+                                 onDelete="CASCADE" />
 
         <addForeignKeyConstraint baseTableName="comments"
                                  baseColumnNames="task_id"
                                  referencedTableName="tasks"
                                  referencedColumnNames="id"
-                                 constraintName="fk_comments_task"/>
+                                 constraintName="fk_comments_task"
+                                 onDelete="CASCADE" />
 
         <addForeignKeyConstraint baseTableName="tasks"
                                  baseColumnNames="author_id"
                                  referencedTableName="users"
                                  referencedColumnNames="id"
-                                 constraintName="fk_tasks_author"/>
+                                 constraintName="fk_tasks_author"
+                                 onDelete="CASCADE" />
 
         <addForeignKeyConstraint baseTableName="tasks"
                                  baseColumnNames="assignee_id"
                                  referencedTableName="users"
                                  referencedColumnNames="id"
-                                 constraintName="fk_tasks_assignee"/>
+                                 constraintName="fk_tasks_assignee"
+                                 onDelete="CASCADE" />
 
     </changeSet>
 

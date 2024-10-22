@@ -53,6 +53,7 @@ public class UserService implements UserDetailsService {
 
     public void deleteById(Long id) {
         userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("user not found"));
+
         userRepository.deleteById(id);
     }
 

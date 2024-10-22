@@ -13,6 +13,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -72,12 +73,13 @@ public class SecurityConfiguration {
                         .requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")).permitAll()
                         .anyRequest().authenticated()
                 )
-                .headers(headers -> headers.frameOptions().disable())// for H-2 browser console access
+                .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))// for H-2 browser console access
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .httpBasic(httpBasic -> httpBasic.authenticationEntryPoint(customBasicAuthenticationEntryPoint))
-                .oauth2ResourceServer(auth2ResourceServer -> auth2ResourceServer.jwt()
-                        .and().authenticationEntryPoint(customBearerTokenAuthenticationEntryPoint)
+                .oauth2ResourceServer(auth2ResourceServer -> auth2ResourceServer
+                        .jwt(Customizer.withDefaults())
+                        .authenticationEntryPoint(customBearerTokenAuthenticationEntryPoint)
                         .accessDeniedHandler(customBearerTokenAccessDeniedHandler))
                 .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(
                         SessionCreationPolicy.STATELESS))
@@ -85,26 +87,26 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(12);
     }
 
     @Bean
-    public JwtEncoder jwtEncoder(){
+    public JwtEncoder jwtEncoder() {
         JWK jwk = new RSAKey.Builder(publicKey).privateKey(privateKey).build();
         JWKSource<SecurityContext> jwkSet = new ImmutableJWKSet<>(new JWKSet(jwk));
         return new NimbusJwtEncoder(jwkSet);
     }
 
     @Bean
-    public JwtDecoder jwtDecoder(){
+    public JwtDecoder jwtDecoder() {
         return NimbusJwtDecoder.withPublicKey(publicKey).build();
     }
 
     @Bean
-    public JwtAuthenticationConverter jwtAuthenticationConverter(){
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
 
-        JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter =  new JwtGrantedAuthoritiesConverter();
+        JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
 
         jwtGrantedAuthoritiesConverter.setAuthoritiesClaimName("authorities");
         jwtGrantedAuthoritiesConverter.setAuthorityPrefix("");
