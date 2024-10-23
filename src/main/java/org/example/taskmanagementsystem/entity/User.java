@@ -6,7 +6,9 @@ import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -39,4 +41,18 @@ public class User{
 
     private boolean enabled;
 
+    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE}, mappedBy = "author")
+    @Builder.Default
+    @ToString.Exclude
+    private List<Task> tasksAuthor = new ArrayList<>();
+
+    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE}, mappedBy = "assignee")
+    @Builder.Default
+    @ToString.Exclude
+    private List<Task> tasksAssignee = new ArrayList<>();
+
+    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE}, mappedBy = "author")
+    @Builder.Default
+    @ToString.Exclude
+    private List<Comment> comments = new ArrayList<>();
 }

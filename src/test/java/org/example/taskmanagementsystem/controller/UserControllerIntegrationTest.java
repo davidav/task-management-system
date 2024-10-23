@@ -58,42 +58,9 @@ public class UserControllerIntegrationTest {
         tokenUser = "Bearer " + jsonUser.getJSONObject("data").getString("token");
     }
 
-//    @Test
-//    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
-//    void testFindAllByAdminSuccess() throws Exception {
-//        mockMvc.perform(get(baseUrl + "/user")
-//                        .accept(MediaType.APPLICATION_JSON)
-//                        .header("Authorization", tokenAdmin))
-//                .andExpect(jsonPath("$.flag").value(true))
-//                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
-//                .andExpect(jsonPath("$.message").value("Found all"))
-//                .andExpect(jsonPath("$.data[0].username").value("admin"))
-//                .andExpect(jsonPath("$.data[1].username").value("user"))
-//                .andExpect(jsonPath("$.data", Matchers.hasSize(2)));
-//    }
-
     @Test
-    void testFindAllByUserFail() throws Exception {
-        mockMvc.perform(get(baseUrl + "/user")
-                        .accept(MediaType.APPLICATION_JSON)
-                        .header("Authorization", tokenUser))
-                .andDo(print())
-                .andExpect(jsonPath("$.flag").value(false))
-                .andExpect(jsonPath("$.code").value(StatusCode.FORBIDDEN))
-                .andExpect(jsonPath("$.message").value("No permission"));
-    }
-
-    @Test
-    void testFindAllNoLoginFail() throws Exception {
-        mockMvc.perform(get(baseUrl + "/user")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.flag").value(false))
-                .andExpect(jsonPath("$.code").value(StatusCode.FORBIDDEN))
-                .andExpect(jsonPath("$.message").value("No permission"));
-    }
-
-    @Test
-    void testFindByIdByAdminSuccess() throws Exception {
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    void testFindByIdByAdminOwnInfoSuccess() throws Exception {
         mockMvc.perform(get(baseUrl + "/user/1")
                         .accept(MediaType.APPLICATION_JSON)
                         .header("Authorization", tokenAdmin))
@@ -105,7 +72,34 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
-    void testFindByIdByUserFail() throws Exception {
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    void testFindByIdByAdminAnotherUserInfoSuccess() throws Exception {
+        mockMvc.perform(get(baseUrl + "/user/2")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", tokenAdmin))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Found one"))
+                .andExpect(jsonPath("$.data").exists())
+                .andExpect(jsonPath("$.data.username").value("user"));
+    }
+
+    @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    void testFindByIdByUserAccessingOwnInfoSuccess() throws Exception {
+        mockMvc.perform(get(baseUrl + "/user/2")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", tokenUser))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Found one"))
+                .andExpect(jsonPath("$.data").exists())
+                .andExpect(jsonPath("$.data.username").value("user"));
+    }
+
+    @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    void testFindByIdByUserAccessingAnotherUserInfoFail() throws Exception {
         mockMvc.perform(get(baseUrl + "/user/1")
                         .accept(MediaType.APPLICATION_JSON)
                         .header("Authorization", tokenUser))
@@ -115,17 +109,8 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
-    void testFindByIdNoLoginFail() throws Exception {
-        mockMvc.perform(get(baseUrl + "/user/1")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.flag").value(false))
-                .andExpect(jsonPath("$.code").value(StatusCode.FORBIDDEN))
-                .andExpect(jsonPath("$.message").value("No permission"));
-    }
-
-    @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
-    void testFindByIdFail() throws Exception {
+    void testFindByIdNotFoundFail() throws Exception {
         mockMvc.perform(get(baseUrl + "/user/3")
                         .accept(MediaType.APPLICATION_JSON)
                         .header("Authorization", tokenAdmin))
@@ -136,7 +121,7 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     void testCreateByAdminSuccess() throws Exception {
         UserRq rq = new UserRq("user1", "user1@mail.com", "user1", Set.of(RoleType.ROLE_USER));
 
@@ -161,8 +146,8 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-    void testCreateByAdminFail() throws Exception {
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    void testCreateByAdminWrongDataFail() throws Exception {
         UserRq fakeRq = new UserRq("", "use", "", null);
 
         mockMvc.perform(
@@ -184,8 +169,25 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-    void testUpdateByAdminSuccess() throws Exception {
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    void testUpdateByAdminOnwInfoSuccess() throws Exception {
+
+        UserRq rq = new UserRq("adminUp", "admin@mail.com", "admin", Set.of(RoleType.ROLE_ADMIN));
+
+        this.mockMvc.perform(put(baseUrl + "/user/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(rq))
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", tokenAdmin))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Update success"))
+                .andExpect(jsonPath("$.data.username").value("adminUp"));
+    }
+
+    @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    void testUpdateByAdminAnotherUserSuccess() throws Exception {
 
         UserRq rq = new UserRq("userUp", "userUp@mail.com", "userUp", Set.of(RoleType.ROLE_USER));
 
@@ -201,8 +203,36 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-    void testUpdateFail() throws Exception {
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    void testUpdateByUserOwnInfoSuccess() throws Exception {
+
+        UserRq rq = new UserRq("userUp", "userUp@mail.com", "user", Set.of(RoleType.ROLE_USER));
+
+        this.mockMvc.perform(put(baseUrl + "/user/2")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(rq))
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", tokenUser))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Update success"))
+                .andExpect(jsonPath("$.data.username").value("userUp"));
+    }
+
+    @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    void testUpdateByUserAnotherUserInfoFail() throws Exception {
+        mockMvc.perform(get(baseUrl + "/user/1")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", tokenUser))
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(StatusCode.FORBIDDEN))
+                .andExpect(jsonPath("$.message").value("No permission"));
+    }
+
+    @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    void testUpdateWrongDataFail() throws Exception {
 
         UserRq rq = new UserRq("", "", "", Set.of());
 
@@ -221,19 +251,19 @@ public class UserControllerIntegrationTest {
                 .andExpect(jsonPath("$.data.roles").value("RoleType must not be null"));
     }
 
-//    @Test
-//    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-//    void testDeleteByIdSuccess() throws Exception {
-//
-//
-//        this.mockMvc.perform(delete(baseUrl + "/user/2")
-//                        .accept(MediaType.APPLICATION_JSON)
-//                        .header("Authorization", tokenAdmin))
-//                .andExpect(jsonPath("$.flag").value(true))
-//                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
-//                .andExpect(jsonPath("$.message").value("Delete success"))
-//                .andExpect(jsonPath("$.data").isEmpty());
-//    }
+    @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    void testDeleteByIdSuccess() throws Exception {
+
+
+        this.mockMvc.perform(delete(baseUrl + "/user/2")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", tokenAdmin))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Delete success"))
+                .andExpect(jsonPath("$.data").isEmpty());
+    }
 
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
@@ -247,6 +277,32 @@ public class UserControllerIntegrationTest {
                 .andExpect(jsonPath("$.message").value("user not found"))
                 .andExpect(jsonPath("$.data").isEmpty());
 
+    }
+
+    @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    void testFindAllByAdminSuccess() throws Exception {
+        mockMvc.perform(get(baseUrl + "/user")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", tokenAdmin))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Found all"))
+                .andExpect(jsonPath("$.data[0].username").value("admin"))
+                .andExpect(jsonPath("$.data[1].username").value("user"))
+                .andExpect(jsonPath("$.data", Matchers.hasSize(2)));
+    }
+
+    @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    void testFindAllByUserFail() throws Exception {
+        mockMvc.perform(get(baseUrl + "/user")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", tokenUser))
+                .andDo(print())
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(StatusCode.FORBIDDEN))
+                .andExpect(jsonPath("$.message").value("No permission"));
     }
 
 }

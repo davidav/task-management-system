@@ -25,12 +25,15 @@ public class JwtProvider {
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(" "));
+        Long userId = ((AppUserDetails)(authentication.getPrincipal()))
+                .getUser().getId();
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("self")
                 .issuedAt(now)
                 .expiresAt(now.plus(expiresIn, ChronoUnit.HOURS))
                 .subject(authentication.getName())
+                .claim("userId", userId)
                 .claim("authorities", authorities)
                 .build();
 
