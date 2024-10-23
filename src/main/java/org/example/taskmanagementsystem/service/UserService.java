@@ -9,6 +9,8 @@ import org.example.taskmanagementsystem.repo.UserRepository;
 import org.example.taskmanagementsystem.security.AppUserDetails;
 import org.example.taskmanagementsystem.util.AppHelperUtils;
 import org.slf4j.helpers.MessageFormatter;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -43,8 +45,17 @@ public class UserService implements UserDetailsService {
 
     public User update(Long id, User update) {
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return userRepository.findById(id)
                 .map(existedUser -> {
+                    //  If the user id not admin, then user can only update own username
+                    if (authentication.getAuthorities().stream()
+                            .noneMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"))){
+                        update.setEmail(null);
+                        update.setRoles(null);
+                        update.setPassword(null);
+                    }
+
                     AppHelperUtils.copyNonNullProperties(update, existedUser);
                     return userRepository.save(existedUser);
                 })
