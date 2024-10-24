@@ -19,6 +19,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import static org.hamcrest.Matchers.any;
@@ -255,7 +257,6 @@ public class UserControllerIntegrationTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     void testDeleteByIdSuccess() throws Exception {
 
-
         this.mockMvc.perform(delete(baseUrl + "/user/2")
                         .accept(MediaType.APPLICATION_JSON)
                         .header("Authorization", tokenAdmin))
@@ -305,4 +306,103 @@ public class UserControllerIntegrationTest {
                 .andExpect(jsonPath("$.message").value("No permission"));
     }
 
+    @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    void testChangeUserPasswordSuccess() throws Exception {
+
+        Map<String, String> passwordMap = new HashMap<>();
+        passwordMap.put("oldPassword", "user");
+        passwordMap.put("newPassword", "Abc12345");
+        passwordMap.put("confirmNewPassword", "Abc12345");
+
+        this.mockMvc.perform(patch(baseUrl + "/user/2/password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(passwordMap))
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", tokenAdmin))
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
+                .andExpect(jsonPath("$.message").value("Change password success"))
+                .andExpect(jsonPath("$.data").isEmpty());
+    }
+
+    @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    void testChangeUserPasswordWithWrongOldPassword() throws Exception {
+
+        Map<String, String> passwordMap = new HashMap<>();
+        passwordMap.put("oldPassword", "wronguser");
+        passwordMap.put("newPassword", "Abc12345");
+        passwordMap.put("confirmNewPassword", "Abc12345");
+
+        this.mockMvc.perform(patch(baseUrl + "/user/2/password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(passwordMap))
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", tokenAdmin))
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(StatusCode.UNAUTHORIZED))
+                .andExpect(jsonPath("$.message").value("username or password is incorrect"))
+                .andExpect(jsonPath("$.data").value("Old password is incorrect"));
+    }
+
+    @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    void testChangeUserPasswordWithNewPasswordNotMatchingConfirmNewPassword() throws Exception {
+
+        Map<String, String> passwordMap = new HashMap<>();
+        passwordMap.put("oldPassword", "user");
+        passwordMap.put("newPassword", "Abc12345");
+        passwordMap.put("confirmNewPassword", "AAbc12345");
+
+        this.mockMvc.perform(patch(baseUrl + "/user/2/password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(passwordMap))
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", tokenAdmin))
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(StatusCode.INVALID_ARGUMENT))
+                .andExpect(jsonPath("$.message").value("New password and confirm new password do not match"))
+                .andExpect(jsonPath("$.data").isEmpty());
+    }
+
+    @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    void testChangeUserPasswordWithUserNotFound() throws Exception {
+
+        Map<String, String> passwordMap = new HashMap<>();
+        passwordMap.put("oldPassword", "user");
+        passwordMap.put("newPassword", "Abc12345");
+        passwordMap.put("confirmNewPassword", "AAbc12345");
+
+        this.mockMvc.perform(patch(baseUrl + "/user/5/password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(passwordMap))
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", tokenAdmin))
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(StatusCode.NOT_FOUND))
+                .andExpect(jsonPath("$.message").value("User with id 5 not found"))
+                .andExpect(jsonPath("$.data").isEmpty());
+    }
+
+    @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    void testChangeUserPasswordNotConfirmingToPasswordPolicy() throws Exception {
+
+        Map<String, String> passwordMap = new HashMap<>();
+        passwordMap.put("oldPassword", "user");
+        passwordMap.put("newPassword", "Abc");
+        passwordMap.put("confirmNewPassword", "Abc");
+
+        this.mockMvc.perform(patch(baseUrl + "/user/2/password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(passwordMap))
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("Authorization", tokenAdmin))
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(StatusCode.INVALID_ARGUMENT))
+                .andExpect(jsonPath("$.message").value("New password does not conform to password policy"))
+                .andExpect(jsonPath("$.data").isEmpty());
+    }
 }
