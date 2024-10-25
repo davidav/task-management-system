@@ -41,6 +41,12 @@ services:
         condition: service_healthy
     restart: on-failure
 
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+
+
 volumes:
   pgadmin-data:
 

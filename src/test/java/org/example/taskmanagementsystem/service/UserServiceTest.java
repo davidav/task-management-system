@@ -1,26 +1,25 @@
 package org.example.taskmanagementsystem.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.example.taskmanagementsystem.client.rediscache.RedisCacheClient;
 import org.example.taskmanagementsystem.entity.RoleType;
 import org.example.taskmanagementsystem.entity.User;
+import org.example.taskmanagementsystem.exception.PasswordChangeIllegalArgumentException;
 import org.example.taskmanagementsystem.repo.UserRepository;
 import org.example.taskmanagementsystem.security.AppUserDetails;
-import org.example.taskmanagementsystem.util.AppHelperUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.security.Principal;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -31,13 +30,16 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 @ActiveProfiles(value = "dev")
 public class UserServiceTest {
-
+    @Mock
+    PasswordEncoder passwordEncoder;
+    @Mock
+    RedisCacheClient redisCacheClient;
     @Mock
     private UserRepository userRepository;
     @InjectMocks
     private UserService userService;
     private final User user = User.builder().id(1L).username("user").email("user@mail.com")
-            .roles(Set.of(RoleType.ROLE_ADMIN)).build();
+            .password("user").roles(Set.of(RoleType.ROLE_ADMIN)).build();
 
     @Test
     public void testFindByIdSuccess() {
@@ -149,7 +151,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void deleteByIdSuccess() {
+    void testDeleteByIdSuccess() {
 
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
         doNothing().when(userRepository).deleteById(1L);
@@ -160,7 +162,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void deleteByIdFail() {
+    void testDeleteByIdFail() {
 
         given(userRepository.findById(2L)).willReturn(Optional.empty());
 
@@ -168,4 +170,61 @@ public class UserServiceTest {
 
         verify(userRepository, times(1)).findById(2L);
     }
+
+    @Test
+    void testChangePasswordSuccess(){
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(user));
+        given(passwordEncoder.matches(anyString(),anyString())).willReturn(true);
+        given(passwordEncoder.encode(anyString())).willReturn("1newUser");
+        given(userRepository.save(user)).willReturn(user);
+        doNothing().when(redisCacheClient).delete(anyString());
+
+        userService.changePassword(1L, "user", "1newUser", "1newUser");
+
+        assertThat(user.getPassword()).isEqualTo("1newUser");
+        verify(userRepository, times(1)).save(user);
+    }
+
+    @Test
+    void testChangePasswordOldPasswordIsIncorrect(){
+        given(userRepository.findById(1L)).willReturn(Optional.of(user));
+        given(passwordEncoder.matches(anyString(),anyString())).willReturn(false);
+        Exception exception = assertThrows(BadCredentialsException.class, () -> {
+            userService.changePassword(1L, "bad", "1newUser", "1newUser");
+        });
+
+        assertThat(exception).isInstanceOf(BadCredentialsException.class).hasMessage("Old password is incorrect");
+
+          }
+
+    @Test
+    void testChangePasswordNewPasswordDoesNotMatchConfirmNewPassword(){
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(user));
+        given(passwordEncoder.matches(anyString(),anyString())).willReturn(true);
+
+
+        Exception exception = assertThrows(PasswordChangeIllegalArgumentException.class, () -> {
+            userService.changePassword(1L, "user", "1newUser", "2newUser");
+        });
+
+        assertThat(exception).isInstanceOf(PasswordChangeIllegalArgumentException.class).hasMessage("New password and confirm new password do not match");
+
+    }
+
+    @Test
+    void testChangePasswordNewPasswordDoesNotConformToPolicy(){
+        given(userRepository.findById(1L)).willReturn(Optional.of(user));
+        given(passwordEncoder.matches(anyString(),anyString())).willReturn(true);
+
+
+        Exception exception = assertThrows(PasswordChangeIllegalArgumentException.class, () -> {
+            userService.changePassword(1L, "user", "newUser", "newUser");
+        });
+
+        assertThat(exception).isInstanceOf(PasswordChangeIllegalArgumentException.class).hasMessage("New password does not conform to password policy");
+
+    }
+
 }
