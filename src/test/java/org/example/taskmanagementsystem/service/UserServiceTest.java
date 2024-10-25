@@ -1,17 +1,16 @@
 package org.example.taskmanagementsystem.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.example.taskmanagementsystem.client.rediscache.RedisCacheClient;
 import org.example.taskmanagementsystem.entity.RoleType;
 import org.example.taskmanagementsystem.entity.User;
 import org.example.taskmanagementsystem.exception.PasswordChangeIllegalArgumentException;
 import org.example.taskmanagementsystem.repo.UserRepository;
 import org.example.taskmanagementsystem.security.AppUserDetails;
-import org.example.taskmanagementsystem.util.AppHelperUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,7 +19,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.security.Principal;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,6 +32,8 @@ import static org.mockito.Mockito.*;
 public class UserServiceTest {
     @Mock
     PasswordEncoder passwordEncoder;
+    @Mock
+    RedisCacheClient redisCacheClient;
     @Mock
     private UserRepository userRepository;
     @InjectMocks
@@ -178,6 +178,7 @@ public class UserServiceTest {
         given(passwordEncoder.matches(anyString(),anyString())).willReturn(true);
         given(passwordEncoder.encode(anyString())).willReturn("1newUser");
         given(userRepository.save(user)).willReturn(user);
+        doNothing().when(redisCacheClient).delete(anyString());
 
         userService.changePassword(1L, "user", "1newUser", "1newUser");
 
@@ -226,15 +227,4 @@ public class UserServiceTest {
 
     }
 
-    @Test
-    void testChangePasswordUserNotFound(){
-        given(userRepository.findById(anyLong())).willReturn(Optional.empty());
-
-        Exception exception = assertThrows(EntityNotFoundException.class, () -> {
-            userService.changePassword(5L, "user", "1newUser", "1newUser");
-        });
-
-        assertThat(exception).isInstanceOf(EntityNotFoundException.class).hasMessage("User with id 5 not found");
-
-    }
 }

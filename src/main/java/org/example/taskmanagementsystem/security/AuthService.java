@@ -27,7 +27,7 @@ public class AuthService {
         String token = jwtProvider.createToken(authentication);
 
         assert userRs != null;
-        redisCacheClient.set("whitelist:" + userRs.id(), token, 2L, TimeUnit.HOURS);
+        redisCacheClient.set("whitelist:" + userRs.id(), token, 2, TimeUnit.HOURS);
 
         Map<String, Object> loginInfo = new HashMap<>();
         loginInfo.put("userInfo", userRs);

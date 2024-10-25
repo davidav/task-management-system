@@ -3,7 +3,7 @@ package org.example.taskmanagementsystem.service;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.apache.logging.log4j.message.FormattedMessage;
+import org.example.taskmanagementsystem.client.rediscache.RedisCacheClient;
 import org.example.taskmanagementsystem.entity.User;
 import org.example.taskmanagementsystem.exception.PasswordChangeIllegalArgumentException;
 import org.example.taskmanagementsystem.repo.UserRepository;
@@ -30,6 +30,7 @@ public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RedisCacheClient redisCacheClient;
 
 
     public User findById(Long id) {
@@ -53,7 +54,9 @@ public class UserService implements UserDetailsService {
                 .map(existedUser -> {
                     //  If the user id not admin, then user can only update own username
                     if (authentication.getAuthorities().stream()
-                            .noneMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"))){
+                            .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"))) {
+                        redisCacheClient.delete("whitelist:" + id);
+                    } else {
                         update.setEmail(null);
                         update.setRoles(null);
                         update.setPassword(null);
@@ -85,21 +88,24 @@ public class UserService implements UserDetailsService {
         User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException(
                 MessageFormatter.format("User with id {} not found", userId).getMessage()));
 
-        if (!passwordEncoder.matches(oldPassword, user.getPassword())){
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
             throw new BadCredentialsException("Old password is incorrect");
         }
 
-        if (!newPassword.equals(confirmNewPassword)){
+        if (!newPassword.equals(confirmNewPassword)) {
             throw new PasswordChangeIllegalArgumentException("New password and confirm new password do not match");
         }
 
         //The new password must contain at least one digit, one lowercase letter, one uppercase letter, and be at least 8 characters long.
         String passwordPolicy = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,}$";
-        if (!newPassword.matches(passwordPolicy)){
+        if (!newPassword.matches(passwordPolicy)) {
             throw new PasswordChangeIllegalArgumentException("New password does not conform to password policy");
         }
 
         user.setPassword(passwordEncoder.encode(newPassword));
+
+        redisCacheClient.delete("whitelist:" + userId);
+
         userRepository.save(user);
 
     }
