@@ -1,4 +1,4 @@
-﻿# task-management-system - система управления задачами
+﻿# task-management-system v.1 - система управления задачами
 
 
 ## Возможности:
